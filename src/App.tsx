@@ -33,7 +33,7 @@ const PRESET_SULLY: AppConfig = {
     patternScale: 1.5,
     textColor: '#ffffff',
     voice: mkComp('https://nos.netease.com/ysf/46882d435e011f0c2c8191370f155579.png', [52, 63, 47, 73], [0, 8, 1, 8], 1.4),
-    transfer: mkComp('https://nos.netease.com/ysf/568a947a6b5a5c8b58a789cb3f543942.png', [51, 58, 43, 52], [6, 12, 6, 12], 1.3),
+    transfer: mkComp('https://nos.netease.com/ysf/46882d435e011f0c2c8191370f155579.png', [52, 63, 47, 73], [6, 14, 6, 14], 1.3),
   },
   user: {
     url: 'https://nos.netease.com/ysf/568a947a6b5a5c8b58a789cb3f543942.png',
@@ -42,7 +42,7 @@ const PRESET_SULLY: AppConfig = {
     patternScale: 1.5,
     textColor: '#000000',
     voice: mkComp('https://nos.netease.com/ysf/568a947a6b5a5c8b58a789cb3f543942.png', [51, 58, 43, 52], [0, 8, 1, 8], 1.4),
-    transfer: mkComp('https://nos.netease.com/ysf/46882d435e011f0c2c8191370f155579.png', [52, 63, 47, 73], [6, 14, 6, 14], 1.3),
+    transfer: mkComp('https://nos.netease.com/ysf/568a947a6b5a5c8b58a789cb3f543942.png', [51, 58, 43, 52], [6, 12, 6, 12], 1.3),
   },
   modalStrategy: 'ai',
 };

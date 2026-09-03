@@ -41,7 +41,6 @@ export function getModalCss(config: AppConfig, _platform: 'sully' | 'link' = 'su
     return `/* -------------------------------------------------------
    5. 转账弹窗框体：用户选择保留系统原生白底圆角样式
    ------------------------------------------------------- */
-div[class*="fixed"][class*="inset-0"][class*="z-[100]"],
 div[class*="fixed"][class*="inset-0"] {
   background: rgba(0, 0, 0, 0.45) !important;
   backdrop-filter: blur(4px) !important;
@@ -54,27 +53,25 @@ div[class*="fixed"][class*="inset-0"] {
     const userSlice = user.transfer?.slice || user.slice;
     const userScale = user.transfer?.patternScale || 1.2;
     const bw = calcTransferBw(userSlice);
-    const textColor = user.textColor;
+    const textColor = userSrc.includes('46882d') ? '#ffffff' : (user.textColor || '#ffffff');
 
     return `/* -------------------------------------------------------
    5. 转账详情弹窗主体 (绑定【用户我方素材】)
    ------------------------------------------------------- */
-.fixed.inset-0.z-\[100\].bg-black\/40.backdrop-blur-sm,
-div[class*="fixed"][class*="inset-0"][class*="z-[100]"],
 div[class*="fixed"][class*="inset-0"] {
   background: rgba(0, 0, 0, 0.45) !important;
   backdrop-filter: blur(4px) !important;
   -webkit-backdrop-filter: blur(4px) !important;
 }
 
-.fixed.inset-0.z-\[100\] .max-w-\[320px\].bg-white.rounded-3xl,
-.fixed.inset-0.z-\[100\] .max-w-\[320px\],
 div[class*="fixed"][class*="inset-0"] div[class*="max-w-[320px]"] {
   border-radius: 0 !important;
   background: transparent !important;
+  background-color: transparent !important;
   box-shadow: none !important;
   overflow: hidden !important;
   border-style: solid !important;
+  border-color: transparent !important;
   border-width: ${bw[0]}px ${bw[1]}px ${bw[2]}px ${bw[3]}px !important;
   border-image-source: url('${userSrc}') !important;
   border-image-slice: ${userSlice[0]} ${userSlice[1]} ${userSlice[2]} ${userSlice[3]} fill !important;
@@ -82,7 +79,6 @@ div[class*="fixed"][class*="inset-0"] div[class*="max-w-[320px]"] {
   border-image-width: ${userScale} !important;
 }
 
-.fixed.inset-0.z-\[100\] .max-w-\[320px\] > div:first-child,
 div[class*="fixed"][class*="inset-0"] div[class*="max-w-[320px]"] > div:first-child {
   background: transparent !important;
   background-image: none !important;
@@ -90,15 +86,12 @@ div[class*="fixed"][class*="inset-0"] div[class*="max-w-[320px]"] > div:first-ch
   color: ${textColor} !important;
 }
 
-.fixed.inset-0.z-\[100\] .max-w-\[320px\] *,
 div[class*="fixed"][class*="inset-0"] div[class*="max-w-[320px]"] * {
   color: ${textColor} !important;
   -webkit-text-fill-color: ${textColor} !important;
   text-shadow: none !important;
 }
 
-.fixed.inset-0.z-\[100\] .max-w-\[320px\] button.bg-gradient-to-r,
-.fixed.inset-0.z-\[100\] .max-w-\[320px\] button[class*="from-amber-400"],
 div[class*="fixed"][class*="inset-0"] div[class*="max-w-[320px]"] button.bg-gradient-to-r,
 div[class*="fixed"][class*="inset-0"] div[class*="max-w-[320px]"] button[class*="from-amber-400"] {
   background: ${textColor === '#ffffff' ? '#ffffff' : '#000000'} !important;
@@ -108,10 +101,8 @@ div[class*="fixed"][class*="inset-0"] div[class*="max-w-[320px]"] button[class*=
   border-radius: 8px !important;
 }
 
-.fixed.inset-0.z-\[100\] .max-w-\[320px\] button.bg-slate-100,
-.fixed.inset-0.z-\[100\] .max-w-\[320px\] button:not([class*="from-amber-400"]),
 div[class*="fixed"][class*="inset-0"] div[class*="max-w-[320px]"] button.bg-slate-100,
-div[class*="fixed"][class*="inset-0"] div[class*="max-w-[320px]"] button:not([class*="from-amber-400"]) {
+div[class*="fixed"][class*="inset-0"] div[class*="max-w-[320px]"] button:not([class*="from-amber-400"]):not([class*="bg-gradient-to-r"]) {
   background: #ffffff !important;
   color: #000000 !important;
   -webkit-text-fill-color: #000000 !important;
@@ -125,19 +116,17 @@ div[class*="fixed"][class*="inset-0"] div[class*="max-w-[320px]"] button:not([cl
     const aiSlice = ai.transfer?.slice || ai.slice;
     const aiScale = ai.transfer?.patternScale || 1.2;
     const bwAi = calcTransferBw(aiSlice);
-    const aiTextColor = aiSrc.includes('568a94') ? '#000000' : ai.textColor;
+    const aiTextColor = aiSrc.includes('568a94') ? '#000000' : (ai.textColor || '#000000');
 
     const userSrc = user.transfer?.url || user.url;
     const userSlice = user.transfer?.slice || user.slice;
     const userScale = user.transfer?.patternScale || 1.2;
     const bwUser = calcTransferBw(userSlice);
-    const userTextColor = userSrc.includes('46882d') ? '#ffffff' : user.textColor;
+    const userTextColor = userSrc.includes('46882d') ? '#ffffff' : (user.textColor || '#ffffff');
 
     return `/* -------------------------------------------------------
    5. 转账弹窗框体：双向智能嗅探 (AI待收款吃AI卡素材，我方发起吃用户卡素材)
    ------------------------------------------------------- */
-.fixed.inset-0.z-\[100\].bg-black\/40.backdrop-blur-sm,
-div[class*="fixed"][class*="inset-0"][class*="z-[100]"],
 div[class*="fixed"][class*="inset-0"] {
   background: rgba(0, 0, 0, 0.45) !important;
   backdrop-filter: blur(4px) !important;
@@ -149,9 +138,11 @@ div[class*="fixed"][class*="inset-0"]:has(button.bg-gradient-to-r) div[class*="m
 div[class*="fixed"][class*="inset-0"]:has(button[class*="from-amber-400"]) div[class*="max-w-[320px]"] {
   border-radius: 0 !important;
   background: transparent !important;
+  background-color: transparent !important;
   box-shadow: none !important;
   overflow: hidden !important;
   border-style: solid !important;
+  border-color: transparent !important;
   border-width: ${bwAi[0]}px ${bwAi[1]}px ${bwAi[2]}px ${bwAi[3]}px !important;
   border-image-source: url('${aiSrc}') !important;
   border-image-slice: ${aiSlice[0]} ${aiSlice[1]} ${aiSlice[2]} ${aiSlice[3]} fill !important;
@@ -162,6 +153,7 @@ div[class*="fixed"][class*="inset-0"]:has(button[class*="from-amber-400"]) div[c
 div[class*="fixed"][class*="inset-0"]:has(button.bg-gradient-to-r) div[class*="max-w-[320px]"] > div:first-child,
 div[class*="fixed"][class*="inset-0"]:has(button[class*="from-amber-400"]) div[class*="max-w-[320px]"] > div:first-child {
   background: transparent !important;
+  background-image: none !important;
   border-bottom: 1.5px dashed ${aiTextColor} !important;
   color: ${aiTextColor} !important;
 }
@@ -170,15 +162,18 @@ div[class*="fixed"][class*="inset-0"]:has(button.bg-gradient-to-r) div[class*="m
 div[class*="fixed"][class*="inset-0"]:has(button[class*="from-amber-400"]) div[class*="max-w-[320px]"] * {
   color: ${aiTextColor} !important;
   -webkit-text-fill-color: ${aiTextColor} !important;
+  text-shadow: none !important;
 }
 
 /* 场景 B: 用户我方发起转账或查看详情 -> 匹配 用户转账卡素材 */
 div[class*="fixed"][class*="inset-0"]:not(:has(button.bg-gradient-to-r)):not(:has(button[class*="from-amber-400"])) div[class*="max-w-[320px]"] {
   border-radius: 0 !important;
   background: transparent !important;
+  background-color: transparent !important;
   box-shadow: none !important;
   overflow: hidden !important;
   border-style: solid !important;
+  border-color: transparent !important;
   border-width: ${bwUser[0]}px ${bwUser[1]}px ${bwUser[2]}px ${bwUser[3]}px !important;
   border-image-source: url('${userSrc}') !important;
   border-image-slice: ${userSlice[0]} ${userSlice[1]} ${userSlice[2]} ${userSlice[3]} fill !important;
@@ -188,6 +183,7 @@ div[class*="fixed"][class*="inset-0"]:not(:has(button.bg-gradient-to-r)):not(:ha
 
 div[class*="fixed"][class*="inset-0"]:not(:has(button.bg-gradient-to-r)):not(:has(button[class*="from-amber-400"])) div[class*="max-w-[320px]"] > div:first-child {
   background: transparent !important;
+  background-image: none !important;
   border-bottom: 1.5px dashed ${userTextColor} !important;
   color: ${userTextColor} !important;
 }
@@ -195,59 +191,9 @@ div[class*="fixed"][class*="inset-0"]:not(:has(button.bg-gradient-to-r)):not(:ha
 div[class*="fixed"][class*="inset-0"]:not(:has(button.bg-gradient-to-r)):not(:has(button[class*="from-amber-400"])) div[class*="max-w-[320px]"] * {
   color: ${userTextColor} !important;
   -webkit-text-fill-color: ${userTextColor} !important;
-}`;
-  }
-
-  // 默认：统一绑定 AI 对方素材 (经典实测 568a94 浅底浅框方案)
-  const aiSrc = ai.transfer?.url || ai.url;
-  const aiSlice = ai.transfer?.slice || ai.slice;
-  const aiScale = ai.transfer?.patternScale || 1.2;
-  const bw = calcTransferBw(aiSlice);
-  const textColor = aiSrc.includes('568a94') ? '#000000' : (ai.textColor || '#000000');
-
-  return `/* -------------------------------------------------------
-   5. 转账详情弹窗主体
-   ------------------------------------------------------- */
-.fixed.inset-0.z-\[100\].bg-black\/40.backdrop-blur-sm,
-div[class*="fixed"][class*="inset-0"][class*="z-[100]"],
-div[class*="fixed"][class*="inset-0"] {
-  background: rgba(0, 0, 0, 0.45) !important;
-  backdrop-filter: blur(4px) !important;
-  -webkit-backdrop-filter: blur(4px) !important;
-}
-
-.fixed.inset-0.z-\[100\] .max-w-\[320px\].bg-white.rounded-3xl,
-.fixed.inset-0.z-\[100\] .max-w-\[320px\],
-div[class*="fixed"][class*="inset-0"] div[class*="max-w-[320px]"] {
-  border-radius: 0 !important;
-  background: transparent !important;
-  box-shadow: none !important;
-  overflow: hidden !important;
-  border-style: solid !important;
-  border-width: ${bw[0]}px ${bw[1]}px ${bw[2]}px ${bw[3]}px !important;
-  border-image-source: url('${aiSrc}') !important;
-  border-image-slice: ${aiSlice[0]} ${aiSlice[1]} ${aiSlice[2]} ${aiSlice[3]} fill !important;
-  border-image-repeat: stretch !important;
-  border-image-width: ${aiScale} !important;
-}
-
-.fixed.inset-0.z-\[100\] .max-w-\[320px\] > div:first-child,
-div[class*="fixed"][class*="inset-0"] div[class*="max-w-[320px]"] > div:first-child {
-  background: transparent !important;
-  background-image: none !important;
-  border-bottom: 1.5px dashed ${textColor} !important;
-  color: ${textColor} !important;
-}
-
-.fixed.inset-0.z-\[100\] .max-w-\[320px\] *,
-div[class*="fixed"][class*="inset-0"] div[class*="max-w-[320px]"] * {
-  color: ${textColor} !important;
-  -webkit-text-fill-color: ${textColor} !important;
   text-shadow: none !important;
 }
 
-.fixed.inset-0.z-\[100\] .max-w-\[320px\] button.bg-gradient-to-r,
-.fixed.inset-0.z-\[100\] .max-w-\[320px\] button[class*="from-amber-400"],
 div[class*="fixed"][class*="inset-0"] div[class*="max-w-[320px]"] button.bg-gradient-to-r,
 div[class*="fixed"][class*="inset-0"] div[class*="max-w-[320px]"] button[class*="from-amber-400"] {
   background: #000000 !important;
@@ -257,10 +203,71 @@ div[class*="fixed"][class*="inset-0"] div[class*="max-w-[320px]"] button[class*=
   border-radius: 8px !important;
 }
 
-.fixed.inset-0.z-\[100\] .max-w-\[320px\] button.bg-slate-100,
-.fixed.inset-0.z-\[100\] .max-w-\[320px\] button:not([class*="from-amber-400"]),
 div[class*="fixed"][class*="inset-0"] div[class*="max-w-[320px]"] button.bg-slate-100,
-div[class*="fixed"][class*="inset-0"] div[class*="max-w-[320px]"] button:not([class*="from-amber-400"]) {
+div[class*="fixed"][class*="inset-0"] div[class*="max-w-[320px]"] button:not([class*="from-amber-400"]):not([class*="bg-gradient-to-r"]) {
+  background: #ffffff !important;
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+  border: 1.5px solid #000000 !important;
+  border-radius: 8px !important;
+}`;
+  }
+
+  // 默认：统一绑定 AI 对方素材 (经典实测 568a94 / 46882d 方案)
+  const aiSrc = ai.transfer?.url || ai.url;
+  const aiSlice = ai.transfer?.slice || ai.slice;
+  const aiScale = ai.transfer?.patternScale || 1.2;
+  const bw = calcTransferBw(aiSlice);
+  const textColor = aiSrc.includes('568a94') ? '#000000' : (ai.textColor || '#000000');
+
+  return `/* -------------------------------------------------------
+   5. 转账详情弹窗主体 (统一绑定【AI 对方素材】)
+   ------------------------------------------------------- */
+div[class*="fixed"][class*="inset-0"] {
+  background: rgba(0, 0, 0, 0.45) !important;
+  backdrop-filter: blur(4px) !important;
+  -webkit-backdrop-filter: blur(4px) !important;
+}
+
+div[class*="fixed"][class*="inset-0"] div[class*="max-w-[320px]"] {
+  border-radius: 0 !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  overflow: hidden !important;
+  border-style: solid !important;
+  border-color: transparent !important;
+  border-image-source: url('${aiSrc}') !important;
+  border-image-slice: ${aiSlice[0]} ${aiSlice[1]} ${aiSlice[2]} ${aiSlice[3]} fill !important;
+  border-width: ${bw[0]}px ${bw[1]}px ${bw[2]}px ${bw[3]}px !important;
+  border-image-repeat: stretch !important;
+  border-image-width: ${aiScale} !important;
+}
+
+div[class*="fixed"][class*="inset-0"] div[class*="max-w-[320px]"] > div:first-child {
+  background: transparent !important;
+  background-image: none !important;
+  border-bottom: 1.5px dashed ${textColor} !important;
+  color: ${textColor} !important;
+}
+
+div[class*="fixed"][class*="inset-0"] div[class*="max-w-[320px]"] * {
+  color: ${textColor} !important;
+  -webkit-text-fill-color: ${textColor} !important;
+  text-shadow: none !important;
+}
+
+div[class*="fixed"][class*="inset-0"] div[class*="max-w-[320px]"] button.bg-gradient-to-r,
+div[class*="fixed"][class*="inset-0"] div[class*="max-w-[320px]"] button[class*="from-amber-400"] {
+  background: #000000 !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  border: 1.5px solid #000000 !important;
+  border-radius: 8px !important;
+}
+
+div[class*="fixed"][class*="inset-0"] div[class*="max-w-[320px]"] button.bg-slate-100,
+div[class*="fixed"][class*="inset-0"] div[class*="max-w-[320px]"] button:not([class*="from-amber-400"]):not([class*="bg-gradient-to-r"]) {
   background: #ffffff !important;
   color: #000000 !important;
   -webkit-text-fill-color: #000000 !important;
@@ -295,8 +302,8 @@ export function generateSullyCSS(config: AppConfig): string {
     ? '#000000'
     : (user.textColor || '#ffffff');
 
-  const receiptSrc = aiTransfer.url || 'https://nos.netease.com/ysf/568a947a6b5a5c8b58a789cb3f543942.png';
-  const receiptSlice = aiTransfer.slice || [51, 58, 43, 52];
+  const receiptSrc = userTransfer.url || 'https://nos.netease.com/ysf/568a947a6b5a5c8b58a789cb3f543942.png';
+  const receiptSlice = userTransfer.slice || [51, 58, 43, 52];
 
   return `/* =======================================================
    Sully 全局视觉定制方案加入白框
@@ -380,8 +387,8 @@ export function generateSullyCSS(config: AppConfig): string {
    3. 语音条独立组件 (维持 34px 矮版)
    ------------------------------------------------------- */
 .sully-voice-bar,
-.sully-chat-messages div[class*="max-w-[260px]"],
-.sully-chat-messages div[class*="max-w-[200px]"],
+div[class*="max-w-[260px]"]:has(button),
+div[class*="max-w-[200px]"]:has(button),
 .sully-bubble-ai div[class*="max-w-[260px]"],
 .sully-bubble-user div[class*="max-w-[260px]"] {
   height: 34px !important;
@@ -397,7 +404,10 @@ export function generateSullyCSS(config: AppConfig): string {
 .sully-bubble-ai div[class*="max-w-[260px]"] > button,
 .sully-bubble-ai div[class*="max-w-[260px]"] > div,
 .sully-bubble-ai div[class*="max-w-[200px]"] > button,
-.sully-bubble-ai div[class*="max-w-[200px]"] > div {
+.sully-bubble-ai div[class*="max-w-[200px]"] > div,
+div[class*="justify-start"] div[class*="max-w-[260px]"] > button,
+div[class*="items-start"] div[class*="max-w-[260px]"] > button,
+div:not([class*="justify-end"]):not([class*="items-end"]):not([class*="flex-row-reverse"]):not([class*="self-end"]):not([class*="ml-auto"]) > div[class*="max-w-[260px]"] > button {
   background: transparent !important;
   border-style: solid !important;
   border-color: transparent !important;
@@ -416,7 +426,11 @@ export function generateSullyCSS(config: AppConfig): string {
 .sully-bubble-user div[class*="max-w-[260px]"] > button,
 .sully-bubble-user div[class*="max-w-[260px]"] > div,
 .sully-bubble-user div[class*="max-w-[200px]"] > button,
-.sully-bubble-user div[class*="max-w-[200px]"] > div {
+.sully-bubble-user div[class*="max-w-[200px]"] > div,
+div[class*="justify-end"] div[class*="max-w-[260px]"] > button,
+div[class*="flex-row-reverse"] div[class*="max-w-[260px]"] > button,
+div[class*="self-end"] div[class*="max-w-[260px]"] > button,
+div[class*="ml-auto"] div[class*="max-w-[260px]"] > button {
   background: transparent !important;
   border-style: solid !important;
   border-color: transparent !important;
@@ -473,26 +487,39 @@ export function generateSullyCSS(config: AppConfig): string {
 }
 
 /* -------------------------------------------------------
-   4. 转账卡片
+   4. 转账卡片组件 (严格限定转账卡自身，绝不波及其他卡片)
    ------------------------------------------------------- */
-/* 默认 / AI 接收方转账卡 (568a94 浅底 -> 纯黑字) */
-div[class*="w-64"][class*="rounded-2xl"],
 div[class*="w-64"][class*="rounded-2xl"][class*="p-4"],
 .sully-transfer-card,
-.msg-transfer-card,
-.sully-bubble-ai div[class*="w-64"][class*="rounded-2xl"],
-.sully-chat-messages > div:not([class*="justify-end"]) div[class*="w-64"] {
+.msg-transfer-card {
   position: relative !important;
+  overflow: visible !important;
   background: transparent !important;
   background-color: transparent !important;
   border-style: solid !important;
   border-color: transparent !important;
   border-radius: 0 !important;
   box-shadow: none !important;
+  border-image-repeat: stretch !important;
+  border-image-width: ${aiTransfer.patternScale} !important;
+  padding: ${aiTransfer.pad[0]}px ${aiTransfer.pad[1]}px ${aiTransfer.pad[2]}px ${aiTransfer.pad[3]}px !important;
   box-sizing: border-box !important;
-  overflow: visible !important;
-  color: ${aiTransferTextColor} !important;
+}
 
+div[class*="w-64"][class*="rounded-2xl"] *,
+.sully-transfer-card *,
+.msg-transfer-card * {
+  text-shadow: none !important;
+  color: ${aiTransferTextColor} !important;
+  -webkit-text-fill-color: ${aiTransferTextColor} !important;
+}
+
+/* 4.1 AI 对方转账卡 (默认 / 居左) */
+div[class*="w-64"][class*="rounded-2xl"][class*="p-4"],
+.sully-bubble-ai div[class*="w-64"][class*="rounded-2xl"],
+div[class*="flex"]:not([class*="justify-end"]) > div[class*="w-64"][class*="rounded-2xl"],
+.sully-chat-messages > div:not([class*="justify-end"]) div[class*="w-64"][class*="rounded-2xl"],
+#bubble-ai-transfer-card {
   border-width: ${bwAiTransfer[0]}px ${bwAiTransfer[1]}px ${bwAiTransfer[2]}px ${bwAiTransfer[3]}px !important;
   border-image-source: url('${aiTransfer.url}') !important;
   border-image-slice: ${aiTransfer.slice[0]} ${aiTransfer.slice[1]} ${aiTransfer.slice[2]} ${aiTransfer.slice[3]} fill !important;
@@ -501,21 +528,16 @@ div[class*="w-64"][class*="rounded-2xl"][class*="p-4"],
   padding: ${aiTransfer.pad[0]}px ${aiTransfer.pad[1]}px ${aiTransfer.pad[2]}px ${aiTransfer.pad[3]}px !important;
 }
 
-div[class*="w-64"][class*="rounded-2xl"] *,
-div[class*="w-64"][class*="rounded-2xl"][class*="p-4"] *,
-.sully-transfer-card *,
-.msg-transfer-card *,
-.sully-bubble-ai div[class*="w-64"] *,
-.sully-chat-messages > div:not([class*="justify-end"]) div[class*="w-64"] * {
-  text-shadow: none !important;
-  color: ${aiTransferTextColor} !important;
-}
-
-/* 用户发送方转账卡 (46882d 黑底 -> 纯白字) */
+/* 4.2 用户发送方转账卡 (紧随其后声明，精准覆盖用户端右侧卡片) */
 .sully-bubble-user div[class*="w-64"][class*="rounded-2xl"],
-.sully-bubble-user div[class*="w-64"][class*="rounded-2xl"][class*="p-4"],
-.sully-bubble-user .sully-transfer-card,
-.sully-chat-messages > div[class*="justify-end"] div[class*="w-64"] {
+div[class*="justify-end"] div[class*="w-64"][class*="rounded-2xl"],
+div[class*="flex-row-reverse"] div[class*="w-64"][class*="rounded-2xl"],
+div[class*="self-end"] div[class*="w-64"][class*="rounded-2xl"],
+div[class*="ml-auto"] div[class*="w-64"][class*="rounded-2xl"],
+div[class*="w-64"][class*="rounded-2xl"][class*="ml-auto"],
+div[class*="w-64"][class*="rounded-2xl"][class*="self-end"],
+.sully-chat-messages > div[class*="justify-end"] div[class*="w-64"][class*="rounded-2xl"],
+#bubble-user-transfer-card {
   border-width: ${bwUserTransfer[0]}px ${bwUserTransfer[1]}px ${bwUserTransfer[2]}px ${bwUserTransfer[3]}px !important;
   border-image-source: url('${userTransfer.url}') !important;
   border-image-slice: ${userTransfer.slice[0]} ${userTransfer.slice[1]} ${userTransfer.slice[2]} ${userTransfer.slice[3]} fill !important;
@@ -524,20 +546,39 @@ div[class*="w-64"][class*="rounded-2xl"][class*="p-4"] *,
   padding: ${userTransfer.pad[0]}px ${userTransfer.pad[1]}px ${userTransfer.pad[2]}px ${userTransfer.pad[3]}px !important;
 }
 
-.sully-bubble-user div[class*="w-64"] *,
-.sully-chat-messages > div[class*="justify-end"] div[class*="w-64"] * {
+.sully-bubble-user div[class*="w-64"][class*="rounded-2xl"] *,
+div[class*="justify-end"] div[class*="w-64"][class*="rounded-2xl"] *,
+div[class*="flex-row-reverse"] div[class*="w-64"][class*="rounded-2xl"] *,
+div[class*="self-end"] div[class*="w-64"][class*="rounded-2xl"] *,
+div[class*="ml-auto"] div[class*="w-64"][class*="rounded-2xl"] *,
+div[class*="w-64"][class*="rounded-2xl"][class*="ml-auto"] *,
+div[class*="w-64"][class*="rounded-2xl"][class*="self-end"] *,
+.sully-chat-messages > div[class*="justify-end"] div[class*="w-64"][class*="rounded-2xl"] *,
+#bubble-user-transfer-card * {
   text-shadow: none !important;
   color: ${userTransferTextColor} !important;
+  -webkit-text-fill-color: ${userTransferTextColor} !important;
 }
 
-div[class*="w-64"] [class*="rounded-full"][class*="bg-white"] {
-  border: 1.5px solid #000000 !important;
+div[class*="w-64"][class*="rounded-2xl"] > div,
+.sully-transfer-top,
+.sully-transfer-bottom {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+}
+
+div[class*="w-64"][class*="rounded-2xl"] [class*="rounded-full"],
+.sully-transfer-card [class*="rounded-full"] {
+  border: 1.5px solid #222222 !important;
   background: #ffffff !important;
+  background-color: #ffffff !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
 }
 
-/* 外层气泡包含转账卡时隐藏自身边框，防止双层边框冲突导致卡片无法展示 */
-.sully-bubble-ai:has(div[class*="w-64"]),
-.sully-bubble-user:has(div[class*="w-64"]) {
+/* 外层气泡包含转账卡时隐藏自身边框，防止双层边框冲突 */
+.sully-bubble-ai:has(div[class*="w-64"][class*="rounded-2xl"]),
+.sully-bubble-user:has(div[class*="w-64"][class*="rounded-2xl"]) {
   background: transparent !important;
   border: none !important;
   border-image: none !important;
@@ -553,21 +594,25 @@ ${getModalCss(config, 'sully')}
 div[class*="rounded-2xl"][class*="shadow-sm"][class*="border"][class*="w-fit"][class*="from-emerald-50"],
 div[class*="rounded-2xl"][class*="shadow-sm"][class*="border"][class*="w-fit"][class*="from-slate-50"] {
   position: relative !important;
+  overflow: visible !important;
   background: transparent !important;
   background-color: transparent !important;
   border-radius: 0 !important;
   box-shadow: none !important;
-  color: #000000 !important;
   border-style: solid !important;
-  border-width: 6px 8px 5px 8px !important;
+  border-color: transparent !important;
   border-image-source: url('${receiptSrc}') !important;
   border-image-slice: ${receiptSlice[0]} ${receiptSlice[1]} ${receiptSlice[2]} ${receiptSlice[3]} fill !important;
+  border-width: 20px 15px 5px 15px !important;
   border-image-repeat: stretch !important;
   border-image-width: 1.2 !important;
+  padding: 3px 10px 5px 10px !important;
+  box-sizing: border-box !important;
 }
 
 div[class*="rounded-2xl"][class*="shadow-sm"][class*="border"][class*="w-fit"] * {
   color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
   text-shadow: none !important;
 }
 

@@ -438,40 +438,68 @@ export const SlicingCanvas: React.FC<SlicingCanvasProps> = ({
           )}
         </div>
 
-        <div className="grid grid-cols-4 gap-2.5">
-          {(['上 (Top)', '右 (Right)', '下 (Bottom)', '左 (Left)'] as const).map((label, i) => {
-            const val = isSliceMode ? currentComp.slice[i] : currentComp.pad[i];
+        <div className="grid grid-cols-4 gap-1.5 sm:gap-2.5">
+          {([
+            { zh: '上', en: 'Top', idx: 0 },
+            { zh: '右', en: 'Right', idx: 1 },
+            { zh: '下', en: 'Bottom', idx: 2 },
+            { zh: '左', en: 'Left', idx: 3 },
+          ] as const).map(({ zh, en, idx }) => {
+            const val = isSliceMode ? currentComp.slice[idx] : currentComp.pad[idx];
             const updateFn = isSliceMode ? onUpdateSlice : onUpdatePad;
+            const label = `${zh} (${en})`;
 
             return (
               <div
-                key={label}
-                className="flex flex-col items-center gap-1.5 bg-white border-2 border-black rounded-xl p-2.5 shadow-[2px_2px_0px_#000]"
+                key={en}
+                className="flex flex-col items-center justify-between bg-white border-2 border-black rounded-xl p-1.5 sm:p-2.5 shadow-[2px_2px_0px_#000] overflow-hidden min-w-0"
               >
-                <span className="text-[11px] font-black text-gray-700">{label}</span>
-                <div className="flex items-center justify-between w-full">
-                  <button
-                    type="button"
-                    onClick={() => updateFn(i, Math.max(0, val - 1))}
-                    className="w-8 h-8 sm:w-7 sm:h-7 flex items-center justify-center rounded-lg border-2 border-black bg-white hover:bg-black hover:text-white text-black font-black shadow-[1.5px_1.5px_0px_#000] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all touch-manipulation"
-                    aria-label={`减少 ${label}`}
-                  >
-                    <Minus className="w-3.5 h-3.5" />
-                  </button>
-                  <input
-                    type="number"
-                    value={val}
-                    onChange={(e) => updateFn(i, Math.max(0, parseInt(e.target.value) || 0))}
-                    className="w-10 text-center text-xs font-black text-black bg-transparent border-none focus:outline-none"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => updateFn(i, val + 1)}
-                    className="w-8 h-8 sm:w-7 sm:h-7 flex items-center justify-center rounded-lg border-2 border-black bg-white hover:bg-black hover:text-white text-black font-black shadow-[1.5px_1.5px_0px_#000] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all touch-manipulation"
-                    aria-label={`增加 ${label}`}
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                  </button>
+                {/* 标题 */}
+                <div className="text-[11px] font-black text-gray-800 flex items-center justify-center gap-0.5 whitespace-nowrap mb-1">
+                  <span>{zh}</span>
+                  <span className="text-[9px] text-gray-400 font-bold hidden sm:inline">({en})</span>
+                </div>
+
+                {/* 移动端 (垂直双层: 上数值/下并排按钮) vs 桌面端 (经典水平排布: [ - ] 数值 [ + ]) */}
+                <div className="w-full flex flex-col sm:flex-row items-center justify-between gap-1 sm:gap-0">
+                  {/* 移动端专属居中输入框 */}
+                  <div className="w-full flex sm:hidden items-center justify-center">
+                    <input
+                      type="number"
+                      value={val}
+                      onChange={(e) => updateFn(idx, Math.max(0, parseInt(e.target.value) || 0))}
+                      className="w-full text-center text-xs font-black text-black bg-slate-100/90 border border-black/25 rounded py-0.5 focus:outline-none focus:bg-white [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    />
+                  </div>
+
+                  {/* 按钮控制组 */}
+                  <div className="grid grid-cols-2 sm:flex sm:items-center sm:justify-between w-full gap-1 sm:gap-0">
+                    <button
+                      type="button"
+                      onClick={() => updateFn(idx, Math.max(0, val - 1))}
+                      className="w-full sm:w-7 h-6 sm:h-7 flex-shrink-0 flex items-center justify-center rounded-md sm:rounded-lg border-1.5 sm:border-2 border-black bg-white hover:bg-black hover:text-white text-black font-black shadow-[1px_1px_0px_#000] sm:shadow-[1.5px_1.5px_0px_#000] active:translate-x-[0.5px] active:translate-y-[0.5px] active:shadow-none transition-all touch-manipulation"
+                      aria-label={`减少 ${label}`}
+                    >
+                      <Minus className="w-3.5 h-3.5 flex-shrink-0" />
+                    </button>
+
+                    {/* 桌面端居中输入框 */}
+                    <input
+                      type="number"
+                      value={val}
+                      onChange={(e) => updateFn(idx, Math.max(0, parseInt(e.target.value) || 0))}
+                      className="hidden sm:block w-10 text-center text-xs font-black text-black bg-transparent border-none focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    />
+
+                    <button
+                      type="button"
+                      onClick={() => updateFn(idx, val + 1)}
+                      className="w-full sm:w-7 h-6 sm:h-7 flex-shrink-0 flex items-center justify-center rounded-md sm:rounded-lg border-1.5 sm:border-2 border-black bg-white hover:bg-black hover:text-white text-black font-black shadow-[1px_1px_0px_#000] sm:shadow-[1.5px_1.5px_0px_#000] active:translate-x-[0.5px] active:translate-y-[0.5px] active:shadow-none transition-all touch-manipulation"
+                      aria-label={`增加 ${label}`}
+                    >
+                      <Plus className="w-3.5 h-3.5 flex-shrink-0" />
+                    </button>
+                  </div>
                 </div>
               </div>
             );
@@ -481,12 +509,12 @@ export const SlicingCanvas: React.FC<SlicingCanvasProps> = ({
 
       {/* 实时单体切片镜像反馈 (一边调参一边眼皮底下的实时零延迟渲染) */}
       <div className="mt-3.5 pt-3 border-t-2 border-black/10">
-        <div className="flex items-center justify-between mb-2">
+        <div className="flex flex-wrap items-center justify-between gap-1 mb-2">
           <span className="text-[11px] font-black text-black flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+            <Sparkles className="w-3.5 h-3.5 text-amber-600 flex-shrink-0" />
             <span>当前组件即时拉伸效果 (动态 1:1 镜像)</span>
           </span>
-          <span className="text-[10px] text-gray-500 font-bold">
+          <span className="text-[10px] text-gray-500 font-bold whitespace-nowrap">
             随上方拖拽 / 加减实时刷新
           </span>
         </div>
