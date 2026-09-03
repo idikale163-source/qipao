@@ -553,6 +553,8 @@ export default function App() {
               config={config}
               activeRole={activeRole}
               activeComponent={activeComponent}
+              exportType={exportType}
+              onSelectExportType={setExportType}
               onSelectComponent={(comp, role) => {
                 setActiveComponent(comp);
                 setActiveRole(role);

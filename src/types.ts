@@ -4,7 +4,7 @@ export type ActiveRole = 'ai' | 'user';
 export type ActiveComponent = 'bubble' | 'voice' | 'transfer';
 export type ActiveComp = ActiveComponent;
 export type ActiveMode = 's' | 'c'; // 's': slice (red), 'c': content padding (green)
-export type ExportType = 'sully' | 'link';
+export type ExportType = 'sully' | 'float' | 'link';
 export type ModalAssetStrategy = 'ai' | 'user' | 'smart' | 'none';
 
 export interface ComponentConfig {

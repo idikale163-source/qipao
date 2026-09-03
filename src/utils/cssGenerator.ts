@@ -478,6 +478,8 @@ export function generateSullyCSS(config: AppConfig): string {
 /* 默认 / AI 接收方转账卡 (568a94 浅底 -> 纯黑字) */
 div[class*="w-64"][class*="rounded-2xl"],
 div[class*="w-64"][class*="rounded-2xl"][class*="p-4"],
+.sully-transfer-card,
+.msg-transfer-card,
 .sully-bubble-ai div[class*="w-64"][class*="rounded-2xl"],
 .sully-chat-messages > div:not([class*="justify-end"]) div[class*="w-64"] {
   position: relative !important;
@@ -501,6 +503,8 @@ div[class*="w-64"][class*="rounded-2xl"][class*="p-4"],
 
 div[class*="w-64"][class*="rounded-2xl"] *,
 div[class*="w-64"][class*="rounded-2xl"][class*="p-4"] *,
+.sully-transfer-card *,
+.msg-transfer-card *,
 .sully-bubble-ai div[class*="w-64"] *,
 .sully-chat-messages > div:not([class*="justify-end"]) div[class*="w-64"] * {
   text-shadow: none !important;
@@ -510,6 +514,7 @@ div[class*="w-64"][class*="rounded-2xl"][class*="p-4"] *,
 /* 用户发送方转账卡 (46882d 黑底 -> 纯白字) */
 .sully-bubble-user div[class*="w-64"][class*="rounded-2xl"],
 .sully-bubble-user div[class*="w-64"][class*="rounded-2xl"][class*="p-4"],
+.sully-bubble-user .sully-transfer-card,
 .sully-chat-messages > div[class*="justify-end"] div[class*="w-64"] {
   border-width: ${bwUserTransfer[0]}px ${bwUserTransfer[1]}px ${bwUserTransfer[2]}px ${bwUserTransfer[3]}px !important;
   border-image-source: url('${userTransfer.url}') !important;
@@ -733,6 +738,365 @@ export function generateLinkCSS(config: AppConfig): string {
 ${getModalCss(config, 'link')}`;
 }
 
+export function generateFloatCSS(config: AppConfig): string {
+  const { ai, user } = config;
+  const bwAi = calcSafeBw(ai.slice);
+  const bwUser = calcSafeBw(user.slice);
+
+  const aiVoice = ai.voice || { url: ai.url, slice: ai.slice, pad: [0, 8, 1, 8], patternScale: 1.4 };
+  const userVoice = user.voice || { url: user.url, slice: user.slice, pad: [0, 8, 1, 8], patternScale: 1.4 };
+  const bwAiVoice = calcSafeBw(aiVoice.slice);
+  const bwUserVoice = calcSafeBw(userVoice.slice);
+
+  const aiTransfer = ai.transfer || { url: ai.url, slice: ai.slice, pad: [6, 12, 6, 12], patternScale: 1.3 };
+  const userTransfer = user.transfer || { url: user.url, slice: user.slice, pad: [6, 14, 6, 14], patternScale: 1.3 };
+  const bwAiTransfer = calcTransferBw(aiTransfer.slice);
+  const bwUserTransfer = calcTransferBw(userTransfer.slice);
+
+  const aiTransferTextColor = aiTransfer.url.includes('568a94')
+    ? '#000000'
+    : aiTransfer.url.includes('46882d')
+    ? '#ffffff'
+    : (ai.textColor || '#000000');
+  const userTransferTextColor = userTransfer.url.includes('46882d')
+    ? '#ffffff'
+    : userTransfer.url.includes('568a94')
+    ? '#000000'
+    : (user.textColor || '#ffffff');
+
+  return `/* =======================================================
+   FLOAT 聊天室全局视觉定制方案 (精准类名适配版)
+   ======================================================= */
+
+/* -------------------------------------------------------
+   1. 基础气泡容器 (.chat-bubble-role-*)
+   ------------------------------------------------------- */
+/* 对方气泡 (AI 助手) */
+.chat-bubble-role-assistant {
+  position: relative !important;
+  background: transparent !important;
+  border-style: solid !important;
+  border-color: transparent !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  box-sizing: border-box !important;
+
+  border-width: ${bwAi[0]}px ${bwAi[1]}px ${bwAi[2]}px ${bwAi[3]}px !important;
+  border-image-source: url('${ai.url}') !important;
+  border-image-slice: ${ai.slice[0]} ${ai.slice[1]} ${ai.slice[2]} ${ai.slice[3]} fill !important;
+  border-image-repeat: stretch !important;
+  border-image-width: ${ai.patternScale} !important;
+
+  padding: ${ai.pad[0]}px ${ai.pad[1]}px ${ai.pad[2]}px ${ai.pad[3]}px !important;
+  color: ${ai.textColor} !important;
+  -webkit-text-fill-color: ${ai.textColor} !important;
+  margin-top: 5px !important;
+  line-height: 1.25 !important;
+  word-break: break-word !important;
+  overflow-wrap: anywhere !important;
+  min-height: 24px !important;
+  height: auto !important;
+}
+
+.chat-bubble-role-assistant *,
+.chat-bubble-role-assistant .chat-markdown,
+.chat-bubble-role-assistant .chat-markdown * {
+  background-color: transparent !important;
+  color: ${ai.textColor} !important;
+  -webkit-text-fill-color: ${ai.textColor} !important;
+  line-height: 1.25 !important;
+}
+
+/* 我的气泡 (用户发送方) */
+.chat-bubble-role-user {
+  position: relative !important;
+  background: transparent !important;
+  border-style: solid !important;
+  border-color: transparent !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  box-sizing: border-box !important;
+
+  border-width: ${bwUser[0]}px ${bwUser[1]}px ${bwUser[2]}px ${bwUser[3]}px !important;
+  border-image-source: url('${user.url}') !important;
+  border-image-slice: ${user.slice[0]} ${user.slice[1]} ${user.slice[2]} ${user.slice[3]} fill !important;
+  border-image-repeat: stretch !important;
+  border-image-width: ${user.patternScale} !important;
+
+  padding: ${user.pad[0]}px ${user.pad[1]}px ${user.pad[2]}px ${user.pad[3]}px !important;
+  color: ${user.textColor} !important;
+  -webkit-text-fill-color: ${user.textColor} !important;
+  margin-top: 5px !important;
+  line-height: 1.25 !important;
+  word-break: break-word !important;
+  overflow-wrap: anywhere !important;
+  min-height: 24px !important;
+  height: auto !important;
+}
+
+.chat-bubble-role-user *,
+.chat-bubble-role-user .chat-markdown,
+.chat-bubble-role-user .chat-markdown * {
+  background-color: transparent !important;
+  color: ${user.textColor} !important;
+  -webkit-text-fill-color: ${user.textColor} !important;
+  line-height: 1.25 !important;
+}
+
+/* 媒体气泡 (图片/视频) */
+.chat-bubble-media {
+  background: transparent !important;
+  border: none !important;
+  border-image: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+}
+
+/* -------------------------------------------------------
+   2. 语音条 (.voice-msg-bubble)
+   ------------------------------------------------------- */
+.voice-msg-bubble {
+  height: 34px !important;
+  min-height: 34px !important;
+  max-height: 34px !important;
+  box-sizing: border-box !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+/* 对方语音条 */
+.chat-bubble-role-assistant .voice-msg-bubble,
+.chat-bubble-role-assistant.voice-msg-bubble {
+  background: transparent !important;
+  border-style: solid !important;
+  border-color: transparent !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  border-width: ${bwAiVoice[0]}px ${bwAiVoice[1]}px ${bwAiVoice[2]}px ${bwAiVoice[3]}px !important;
+  border-image-source: url('${aiVoice.url}') !important;
+  border-image-slice: ${aiVoice.slice[0]} ${aiVoice.slice[1]} ${aiVoice.slice[2]} ${aiVoice.slice[3]} fill !important;
+  border-image-repeat: stretch !important;
+  border-image-width: ${aiVoice.patternScale} !important;
+  padding: ${aiVoice.pad[0]}px ${aiVoice.pad[1]}px ${aiVoice.pad[2]}px ${aiVoice.pad[3]}px !important;
+}
+
+/* 我方语音条 */
+.chat-bubble-role-user .voice-msg-bubble,
+.chat-bubble-role-user.voice-msg-bubble {
+  background: transparent !important;
+  border-style: solid !important;
+  border-color: transparent !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  border-width: ${bwUserVoice[0]}px ${bwUserVoice[1]}px ${bwUserVoice[2]}px ${bwUserVoice[3]}px !important;
+  border-image-source: url('${userVoice.url}') !important;
+  border-image-slice: ${userVoice.slice[0]} ${userVoice.slice[1]} ${userVoice.slice[2]} ${userVoice.slice[3]} fill !important;
+  border-image-repeat: stretch !important;
+  border-image-width: ${userVoice.patternScale} !important;
+  padding: ${userVoice.pad[0]}px ${userVoice.pad[1]}px ${userVoice.pad[2]}px ${userVoice.pad[3]}px !important;
+}
+
+/* 语音文字与时长 (.voice-msg-dur) */
+.chat-bubble-role-assistant .voice-msg-dur,
+.chat-bubble-role-assistant .voice-msg-bubble span,
+.chat-bubble-role-assistant .voice-msg-bubble p {
+  color: ${ai.textColor} !important;
+  -webkit-text-fill-color: ${ai.textColor} !important;
+}
+.chat-bubble-role-user .voice-msg-dur,
+.chat-bubble-role-user .voice-msg-bubble span,
+.chat-bubble-role-user .voice-msg-bubble p {
+  color: ${user.textColor} !important;
+  -webkit-text-fill-color: ${user.textColor} !important;
+}
+
+/* 语音波形与播放图标 (.voice-msg-icon, .voice-msg-bar, .voice-msg-bars) */
+.chat-bubble-role-assistant .voice-msg-icon,
+.chat-bubble-role-assistant .voice-msg-bar,
+.chat-bubble-role-assistant .voice-msg-bars,
+.chat-bubble-role-assistant .voice-msg-bars[data-playing] {
+  color: ${ai.textColor} !important;
+  background-color: ${ai.textColor} !important;
+  fill: ${ai.textColor} !important;
+}
+.chat-bubble-role-user .voice-msg-icon,
+.chat-bubble-role-user .voice-msg-bar,
+.chat-bubble-role-user .voice-msg-bars,
+.chat-bubble-role-user .voice-msg-bars[data-playing] {
+  color: ${user.textColor} !important;
+  background-color: ${user.textColor} !important;
+  fill: ${user.textColor} !important;
+}
+
+/* 包含语音条时清空外层气泡默认边框 */
+.chat-bubble-role-assistant:has(.voice-msg-bubble),
+.chat-bubble-role-user:has(.voice-msg-bubble) {
+  background: transparent !important;
+  border: none !important;
+  border-image: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+/* -------------------------------------------------------
+   3. 转账卡片 / 红包卡片 / 系统标准卡片
+   ------------------------------------------------------- */
+/* 对方接收端：转账/红包/礼物卡片 (浅底素材 -> 纯黑字) */
+.chat-transfer-card,
+.chat-red-packet-card,
+.chat-gift-card,
+.chat-music-share-card,
+.scan-pay-card,
+.chat-app-card,
+.chat-html-inline,
+.chat-bubble-role-assistant .chat-transfer-card,
+.chat-bubble-role-assistant .chat-red-packet-card {
+  position: relative !important;
+  background: transparent !important;
+  border-style: solid !important;
+  border-color: transparent !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  box-sizing: border-box !important;
+  color: ${aiTransferTextColor} !important;
+
+  border-width: ${bwAiTransfer[0]}px ${bwAiTransfer[1]}px ${bwAiTransfer[2]}px ${bwAiTransfer[3]}px !important;
+  border-image-source: url('${aiTransfer.url}') !important;
+  border-image-slice: ${aiTransfer.slice[0]} ${aiTransfer.slice[1]} ${aiTransfer.slice[2]} ${aiTransfer.slice[3]} fill !important;
+  border-image-repeat: stretch !important;
+  border-image-width: ${aiTransfer.patternScale} !important;
+  padding: ${aiTransfer.pad[0]}px ${aiTransfer.pad[1]}px ${aiTransfer.pad[2]}px ${aiTransfer.pad[3]}px !important;
+}
+
+.chat-transfer-card *,
+.chat-red-packet-card *,
+.chat-gift-card *,
+.chat-music-share-card *,
+.scan-pay-card *,
+.chat-app-card *,
+.chat-html-inline *,
+.chat-bubble-role-assistant .chat-transfer-card *,
+.chat-bubble-role-assistant .chat-red-packet-card * {
+  text-shadow: none !important;
+  color: ${aiTransferTextColor} !important;
+}
+
+/* 我方发送端：转账/红包卡片 (黑底素材 -> 纯白字) */
+.chat-bubble-role-user .chat-transfer-card,
+.chat-bubble-role-user .chat-red-packet-card {
+  border-width: ${bwUserTransfer[0]}px ${bwUserTransfer[1]}px ${bwUserTransfer[2]}px ${bwUserTransfer[3]}px !important;
+  border-image-source: url('${userTransfer.url}') !important;
+  border-image-slice: ${userTransfer.slice[0]} ${userTransfer.slice[1]} ${userTransfer.slice[2]} ${userTransfer.slice[3]} fill !important;
+  border-image-repeat: stretch !important;
+  border-image-width: ${userTransfer.patternScale} !important;
+  padding: ${userTransfer.pad[0]}px ${userTransfer.pad[1]}px ${userTransfer.pad[2]}px ${userTransfer.pad[3]}px !important;
+}
+
+.chat-bubble-role-user .chat-transfer-card *,
+.chat-bubble-role-user .chat-red-packet-card * {
+  text-shadow: none !important;
+  color: ${userTransferTextColor} !important;
+}
+
+/* 预留红包和转账的背景渐变 (取消注释可一键上色):
+.chat-red-packet-body,
+.chat-transfer-body {
+  background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(0,0,0,0.12) 100%) !important;
+}
+*/
+
+/* 包含卡片时清空外层气泡边框 */
+.chat-bubble-role-assistant:has(.chat-transfer-card),
+.chat-bubble-role-assistant:has(.chat-red-packet-card),
+.chat-bubble-role-assistant:has(.chat-gift-card),
+.chat-bubble-role-user:has(.chat-transfer-card),
+.chat-bubble-role-user:has(.chat-red-packet-card),
+.chat-bubble-role-user:has(.chat-gift-card) {
+  background: transparent !important;
+  border: none !important;
+  border-image: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+/* -------------------------------------------------------
+   4. 位置卡片 (.chat-location-card)
+   ------------------------------------------------------- */
+.chat-location-card {
+  border-radius: 12px !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(0, 0, 0, 0.12) !important;
+  background: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
+}
+
+.chat-location-map {
+  width: 100% !important;
+  height: 110px !important;
+  object-fit: cover !important;
+}
+
+.chat-location-label {
+  padding: 8px 10px !important;
+  font-size: 12px !important;
+  line-height: 1.3 !important;
+  color: #1a1a1a !important;
+}
+
+/* -------------------------------------------------------
+   5. 弹窗 / 长按菜单 / 引用与编辑框
+   ------------------------------------------------------- */
+.ctx-menu {
+  background: #232326 !important;
+  color: #ffffff !important;
+  border-radius: 10px !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  padding: 4px !important;
+  z-index: 120 !important;
+}
+
+.ctx-menu-btn {
+  color: #f1f1f1 !important;
+  border-radius: 6px !important;
+  padding: 6px 12px !important;
+  font-size: 13px !important;
+  transition: background 0.15s ease !important;
+}
+
+.ctx-menu-btn:hover {
+  background: rgba(255, 255, 255, 0.12) !important;
+}
+
+.ctx-menu-btn-danger {
+  color: #ff5252 !important;
+}
+
+.chat-quote-bar {
+  border-left: 3px solid rgba(120, 120, 120, 0.5) !important;
+  padding-left: 8px !important;
+  margin: 4px 0 !important;
+  font-size: 12px !important;
+  opacity: 0.8 !important;
+}
+
+.chat-inline-edit-textarea {
+  background: rgba(255, 255, 255, 0.85) !important;
+  border: 1.5px solid #000000 !important;
+  border-radius: 8px !important;
+  padding: 6px 8px !important;
+  font-size: 13px !important;
+  color: #000000 !important;
+}
+
+${getModalCss(config, 'sully')}`;
+}
+
 export function generateCSS(config: AppConfig, type: ExportType): string {
+  if (type === 'float') {
+    return generateFloatCSS(config);
+  }
   return type === 'sully' ? generateSullyCSS(config) : generateLinkCSS(config);
 }

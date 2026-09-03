@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
-import { ActiveComponent, ActiveRole, AppConfig } from '../types';
+import { ActiveComponent, ActiveRole, AppConfig, ExportType } from '../types';
 import { calcSafeBw, calcTransferBw } from '../utils/cssGenerator';
-import { Play, Pause, X, ArrowRightLeft, MessageSquare, Maximize2 } from 'lucide-react';
+import { Play, Pause, X, ArrowRightLeft, MessageSquare, Maximize2, Layers } from 'lucide-react';
 
 interface PreviewSectionProps {
   config: AppConfig;
   activeRole: ActiveRole;
   activeComponent?: ActiveComponent;
+  exportType?: ExportType;
+  onSelectExportType?: (type: ExportType) => void;
   onSelectComponent?: (comp: ActiveComponent, role: ActiveRole) => void;
 }
 
@@ -14,9 +16,14 @@ export const PreviewSection: React.FC<PreviewSectionProps> = ({
   config,
   activeRole,
   activeComponent,
+  exportType = 'sully',
+  onSelectExportType,
   onSelectComponent,
 }) => {
   const { ai, user } = config;
+  const currentPlatform: ExportType = (exportType as ExportType) || 'sully';
+  const isDirectBorderModel = currentPlatform === 'sully' || currentPlatform === 'float';
+
   const [isPlayingAi, setIsPlayingAi] = useState(false);
   const [isPlayingUser, setIsPlayingUser] = useState(false);
   const [modalRole, setModalRole] = useState<'ai' | 'user' | null>(null);
@@ -118,18 +125,109 @@ export const PreviewSection: React.FC<PreviewSectionProps> = ({
     color: userTransferTextColor,
   };
 
+  // AI Bubble direct style (Sully / Float: true single-element box model)
+  const aiBubbleStyleDirect: React.CSSProperties = {
+    position: 'relative',
+    boxSizing: 'border-box',
+    borderStyle: 'solid',
+    borderColor: 'transparent',
+    borderWidth: `${bwAi[0]}px ${bwAi[1]}px ${bwAi[2]}px ${bwAi[3]}px`,
+    borderImageSource: `url('${ai.url}')`,
+    borderImageSlice: `${ai.slice[0]} ${ai.slice[1]} ${ai.slice[2]} ${ai.slice[3]} fill`,
+    borderImageRepeat: 'stretch',
+    borderImageWidth: ai.patternScale,
+    padding: `${ai.pad[0]}px ${ai.pad[1]}px ${ai.pad[2]}px ${ai.pad[3]}px`,
+    color: ai.textColor,
+    lineHeight: 1.25,
+    wordBreak: 'break-word',
+    overflowWrap: 'anywhere',
+  };
+
+  // User Bubble direct style (Sully / Float: true single-element box model)
+  const userBubbleStyleDirect: React.CSSProperties = {
+    position: 'relative',
+    boxSizing: 'border-box',
+    borderStyle: 'solid',
+    borderColor: 'transparent',
+    borderWidth: `${bwUser[0]}px ${bwUser[1]}px ${bwUser[2]}px ${bwUser[3]}px`,
+    borderImageSource: `url('${user.url}')`,
+    borderImageSlice: `${user.slice[0]} ${user.slice[1]} ${user.slice[2]} ${user.slice[3]} fill`,
+    borderImageRepeat: 'stretch',
+    borderImageWidth: user.patternScale,
+    padding: `${user.pad[0]}px ${user.pad[1]}px ${user.pad[2]}px ${user.pad[3]}px`,
+    color: user.textColor,
+    lineHeight: 1.25,
+    wordBreak: 'break-word',
+    overflowWrap: 'anywhere',
+  };
+
+  // LINK isolated pseudo-layer style
+  const aiBubbleStyleLink: React.CSSProperties = {
+    position: 'relative',
+    padding: `${ai.pad[0]}px ${ai.pad[1]}px ${ai.pad[2]}px ${ai.pad[3]}px`,
+    color: ai.textColor,
+    lineHeight: 1.25,
+  };
+
+  const userBubbleStyleLink: React.CSSProperties = {
+    position: 'relative',
+    padding: `${user.pad[0]}px ${user.pad[1]}px ${user.pad[2]}px ${user.pad[3]}px`,
+    color: user.textColor,
+    lineHeight: 1.25,
+  };
+
   return (
     <div id="preview-section-card" className="bg-white rounded-xl p-3 sm:p-4 border-2 border-black shadow-[3px_3px_0px_#000] flex flex-col h-full">
       {/* 预览视窗顶部栏 */}
-      <div className="flex flex-wrap items-center justify-between gap-2 mb-3 pb-2.5 border-b border-gray-100">
-        <div className="flex items-center gap-2">
-          <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse border border-black" />
-          <h2 className="text-xs font-black text-black">
-            实时预览视窗 <span className="text-[10px] text-gray-500 font-bold ml-1">零延迟联动</span>
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-2 pb-2.5 border-b border-gray-100">
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse border border-black shrink-0" />
+          <h2 className="text-xs font-black text-black mr-1">
+            实时预览
           </h2>
+
+          {/* 3 平台真机盒模型切换器 */}
+          <div className="flex bg-[#e5e7eb] p-0.5 border border-black rounded-lg shadow-xs">
+            <button
+              type="button"
+              onClick={() => onSelectExportType?.('sully')}
+              className={`px-2 py-0.5 rounded text-[10px] font-black transition-all ${
+                currentPlatform === 'sully'
+                  ? 'bg-black text-white shadow-xs'
+                  : 'text-gray-700 hover:text-black'
+              }`}
+              title="切换为 Sully 单层真实盒模型（border-image 作用于气泡自身）"
+            >
+              Sully 原生
+            </button>
+            <button
+              type="button"
+              onClick={() => onSelectExportType?.('float')}
+              className={`px-2 py-0.5 rounded text-[10px] font-black transition-all ${
+                currentPlatform === 'float'
+                  ? 'bg-black text-white shadow-xs'
+                  : 'text-gray-700 hover:text-black'
+              }`}
+              title="切换为 Float 原生聊天室盒模型（包含 .chat-markdown 嵌套结构）"
+            >
+              Float 原生
+            </button>
+            <button
+              type="button"
+              onClick={() => onSelectExportType?.('link')}
+              className={`px-2 py-0.5 rounded text-[10px] font-black transition-all ${
+                currentPlatform === 'link'
+                  ? 'bg-black text-white shadow-xs'
+                  : 'text-gray-700 hover:text-black'
+              }`}
+              title="切换为 LINK ::before 双层隔离盒模型"
+            >
+              LINK 线上
+            </button>
+          </div>
         </div>
 
-        {/* 视窗视图切换: 聊天流 / 自由拉伸测试 */}
+        {/* 视窗视图切换: 聊天流 / 自由拉伸测试 / 转账弹窗 */}
         <div className="flex items-center gap-1.5">
           <div className="flex bg-[#f0f2f5] p-0.5 border border-black rounded-lg">
             <button
@@ -170,43 +268,89 @@ export const PreviewSection: React.FC<PreviewSectionProps> = ({
         </div>
       </div>
 
+      {/* 平台盒模型即时解析条 (解释为什么渲染有差异) */}
+      <div className="text-[11px] font-bold px-2.5 py-1.5 rounded-lg border border-black/15 mb-2.5 flex items-center justify-between gap-2 transition-all bg-neutral-50 shadow-xs">
+        {currentPlatform === 'sully' && (
+          <>
+            <span className="text-blue-950 leading-snug">
+              📌 <b>Sully 单层真实盒模型</b>：九宫格直接挂在气泡容器上，真实文字外距 = <b>边框厚度({bwAi[0]}px) + 内边距({ai.pad[0]}px)</b>。
+            </span>
+            <span className="text-[10px] bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded font-black border border-blue-300 shrink-0">Sully 实景</span>
+          </>
+        )}
+        {currentPlatform === 'float' && (
+          <>
+            <span className="text-purple-950 leading-snug">
+              📌 <b>Float 原生盒模型</b>：单层容器直接挂载，内部嵌套 <code>.chat-markdown</code>，精准还原 Float 聊天室行高与边界。
+            </span>
+            <span className="text-[10px] bg-purple-100 text-purple-800 px-1.5 py-0.5 rounded font-black border border-purple-300 shrink-0">Float 实景</span>
+          </>
+        )}
+        {currentPlatform === 'link' && (
+          <>
+            <span className="text-emerald-950 leading-snug">
+              📌 <b>LINK 线上隔离模型</b>：九宫格置于 <code>::before</code> 绝对定位伪元素层，文字间距完全仅由 <b>内边距({ai.pad[0]}px)</b> 控制。
+            </span>
+            <span className="text-[10px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-black border border-emerald-300 shrink-0">LINK 线上</span>
+          </>
+        )}
+      </div>
+
       {/* 视图模式 1: 真实聊天视窗 */}
       {previewTab === 'chat' && (
         <div
           id="chat-simulator-viewport"
-          className="bg-[#f0f2f5] rounded-xl p-3 sm:p-4 flex flex-col gap-3.5 overflow-y-auto relative border-2 border-black shadow-inner select-none flex-1"
+          className="bg-[#f0f2f5] rounded-xl p-3 sm:p-4 flex flex-col gap-3 overflow-y-auto relative border-2 border-black shadow-inner select-none flex-1"
           style={{ minHeight: '380px', maxHeight: '520px' }}
         >
-          {/* 1. AI 接收方：普通文本气泡 (九宫格平滑拉伸层) */}
+          {/* 1. AI 接收方：普通文本气泡 */}
           <div className="flex flex-col items-start max-w-[85%]">
             <span className="text-[10px] font-black text-gray-600 mb-1 ml-1">AI 对方</span>
-            <div
-              id="bubble-ai-preview"
-              onClick={() => onSelectComponent?.('bubble', 'ai')}
-              className={`relative z-1 box-border w-fit min-w-[36px] max-w-full bg-transparent border-none text-[13px] leading-[1.3] break-words whitespace-pre-wrap cursor-pointer transition-all ${
-                activeRole === 'ai' && activeComponent === 'bubble'
-                  ? 'ring-2 ring-black ring-offset-2 scale-[1.01]'
-                  : 'hover:opacity-90'
-              }`}
-              style={{
-                padding: `${ai.pad[0]}px ${ai.pad[1]}px ${ai.pad[2]}px ${ai.pad[3]}px`,
-                color: ai.textColor,
-              }}
-            >
+            {isDirectBorderModel ? (
               <div
-                className="absolute inset-0 -z-1 pointer-events-none"
-                style={{
-                  borderStyle: 'solid',
-                  borderColor: 'transparent',
-                  borderImageRepeat: 'stretch',
-                  borderImageSource: `url('${ai.url}')`,
-                  borderImageSlice: `${ai.slice[0]} ${ai.slice[1]} ${ai.slice[2]} ${ai.slice[3]} fill`,
-                  borderWidth: `${bwAi[0]}px ${bwAi[1]}px ${bwAi[2]}px ${bwAi[3]}px`,
-                  borderImageWidth: ai.patternScale,
-                }}
-              />
-              好哦，我已经收到了，切片样式很漂亮！
-            </div>
+                id="bubble-ai-preview"
+                onClick={() => onSelectComponent?.('bubble', 'ai')}
+                className={`sully-bubble-ai chat-bubble-role-assistant w-fit min-w-[36px] max-w-full text-[13px] leading-[1.3] break-words whitespace-pre-wrap cursor-pointer transition-all ${
+                  activeRole === 'ai' && activeComponent === 'bubble'
+                    ? 'ring-2 ring-black ring-offset-2 scale-[1.01]'
+                    : 'hover:opacity-90'
+                }`}
+                style={aiBubbleStyleDirect}
+              >
+                {currentPlatform === 'float' ? (
+                  <div className="chat-markdown">
+                    <p className="m-0 leading-snug">好哦，我已经收到了，切片样式很漂亮！</p>
+                  </div>
+                ) : (
+                  <span>好哦，我已经收到了，切片样式很漂亮！</span>
+                )}
+              </div>
+            ) : (
+              <div
+                id="bubble-ai-preview"
+                onClick={() => onSelectComponent?.('bubble', 'ai')}
+                className={`relative z-1 box-border w-fit min-w-[36px] max-w-full bg-transparent border-none text-[13px] leading-[1.3] break-words whitespace-pre-wrap cursor-pointer transition-all ${
+                  activeRole === 'ai' && activeComponent === 'bubble'
+                    ? 'ring-2 ring-black ring-offset-2 scale-[1.01]'
+                    : 'hover:opacity-90'
+                }`}
+                style={aiBubbleStyleLink}
+              >
+                <div
+                  className="absolute inset-0 -z-1 pointer-events-none"
+                  style={{
+                    borderStyle: 'solid',
+                    borderColor: 'transparent',
+                    borderImageRepeat: 'stretch',
+                    borderImageSource: `url('${ai.url}')`,
+                    borderImageSlice: `${ai.slice[0]} ${ai.slice[1]} ${ai.slice[2]} ${ai.slice[3]} fill`,
+                    borderWidth: `${bwAi[0]}px ${bwAi[1]}px ${bwAi[2]}px ${bwAi[3]}px`,
+                    borderImageWidth: ai.patternScale,
+                  }}
+                />
+                <span>好哦，我已经收到了，切片样式很漂亮！</span>
+              </div>
+            )}
           </div>
 
           {/* 2. AI 接收方：独立语音条 */}
@@ -215,14 +359,14 @@ export const PreviewSection: React.FC<PreviewSectionProps> = ({
               id="voice-ai-preview"
               style={aiVoiceStyle}
               onClick={() => onSelectComponent?.('voice', 'ai')}
-              className={`flex items-center gap-2 cursor-pointer w-36 h-8 text-xs font-bold select-none transition-all ${
+              className={`sully-voice-bar voice-msg-bubble flex items-center gap-2 cursor-pointer w-36 h-8 text-xs font-bold select-none transition-all ${
                 activeRole === 'ai' && activeComponent === 'voice'
                   ? 'ring-2 ring-black ring-offset-2 scale-[1.01]'
                   : 'hover:opacity-90'
               }`}
             >
               <div
-                className="w-5 h-5 rounded-full flex items-center justify-center cursor-pointer"
+                className="voice-msg-icon w-5 h-5 rounded-full flex items-center justify-center cursor-pointer"
                 style={{ backgroundColor: 'rgba(0,0,0,0.06)' }}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -235,7 +379,7 @@ export const PreviewSection: React.FC<PreviewSectionProps> = ({
                   <Play className="w-3 h-3" style={{ color: ai.textColor, fill: ai.textColor }} />
                 )}
               </div>
-              <div className="flex items-center gap-0.5 flex-1">
+              <div className="voice-msg-bar voice-msg-bars flex items-center gap-0.5 flex-1" data-playing={isPlayingAi ? 'true' : undefined}>
                 {[8, 14, 10, 16, 12, 18, 14, 10].map((h, idx) => (
                   <span
                     key={idx}
@@ -249,7 +393,7 @@ export const PreviewSection: React.FC<PreviewSectionProps> = ({
                   />
                 ))}
               </div>
-              <span style={{ color: ai.textColor }}>4"</span>
+              <span className="voice-msg-dur" style={{ color: ai.textColor }}>4"</span>
             </div>
           </div>
 
@@ -262,13 +406,13 @@ export const PreviewSection: React.FC<PreviewSectionProps> = ({
                 onSelectComponent?.('transfer', 'ai');
                 setModalRole('ai');
               }}
-              className={`w-60 sm:w-64 cursor-pointer text-xs transition-all ${
+              className={`sully-transfer-card chat-transfer-card w-60 sm:w-64 cursor-pointer text-xs transition-all ${
                 activeRole === 'ai' && activeComponent === 'transfer'
                   ? 'ring-2 ring-black ring-offset-2 scale-[1.01]'
                   : 'hover:opacity-90'
               }`}
             >
-              <div className="flex items-center gap-2.5 pb-2 border-b border-black/10">
+              <div className="chat-transfer-body flex items-center gap-2.5 pb-2 border-b border-black/10">
                 <div
                   className="w-7 h-7 rounded-full bg-white flex items-center justify-center font-bold text-xs shadow-xs shrink-0"
                   style={{ border: `1.5px solid ${aiTransferTextColor}`, color: aiTransferTextColor }}
@@ -288,52 +432,107 @@ export const PreviewSection: React.FC<PreviewSectionProps> = ({
             </div>
           </div>
 
-          {/* 4. 用户发送方：普通文本气泡 (九宫格平滑拉伸层) */}
+          {/* 4. 用户发送方：极短文本测试 (验证边框宽度是否把短词撑得过大) */}
           <div className="flex flex-col items-end self-end max-w-[85%]">
-            <span className="text-[10px] font-black text-gray-600 mb-1 mr-1">我 (用户)</span>
+            <span className="text-[10px] font-black text-gray-600 mb-1 mr-1">我 (用户短回复测试)</span>
+            {isDirectBorderModel ? (
+              <div
+                id="bubble-user-short-preview"
+                onClick={() => onSelectComponent?.('bubble', 'user')}
+                className={`sully-bubble-user chat-bubble-role-user w-fit min-w-[32px] max-w-full text-[13px] leading-[1.3] break-words whitespace-pre-wrap cursor-pointer transition-all text-left ${
+                  activeRole === 'user' && activeComponent === 'bubble'
+                    ? 'ring-2 ring-black ring-offset-2 scale-[1.01]'
+                    : 'hover:opacity-90'
+                }`}
+                style={userBubbleStyleDirect}
+                title="短文本真实尺寸测试"
+              >
+                {currentPlatform === 'float' ? (
+                  <div className="chat-markdown">
+                    <p className="m-0 leading-snug">好</p>
+                  </div>
+                ) : (
+                  <span>好</span>
+                )}
+              </div>
+            ) : (
+              <div
+                id="bubble-user-short-preview"
+                onClick={() => onSelectComponent?.('bubble', 'user')}
+                className={`relative z-1 box-border w-fit min-w-[32px] max-w-full bg-transparent border-none text-[13px] leading-[1.3] break-words whitespace-pre-wrap cursor-pointer transition-all text-left ${
+                  activeRole === 'user' && activeComponent === 'bubble'
+                    ? 'ring-2 ring-black ring-offset-2 scale-[1.01]'
+                    : 'hover:opacity-90'
+                }`}
+                style={userBubbleStyleLink}
+              >
+                <div
+                  className="absolute inset-0 -z-1 pointer-events-none"
+                  style={{
+                    borderStyle: 'solid',
+                    borderColor: 'transparent',
+                    borderImageRepeat: 'stretch',
+                    borderImageSource: `url('${user.url}')`,
+                    borderImageSlice: `${user.slice[0]} ${user.slice[1]} ${user.slice[2]} ${user.slice[3]} fill`,
+                    borderWidth: `${bwUser[0]}px ${bwUser[1]}px ${bwUser[2]}px ${bwUser[3]}px`,
+                    borderImageWidth: user.patternScale,
+                  }}
+                />
+                <span>好</span>
+              </div>
+            )}
+          </div>
+
+          {/* 5. 用户发送方：标准普通文本气泡 */}
+          <div className="flex flex-col items-end self-end max-w-[85%]">
             <div
               id="bubble-user-preview"
               onClick={() => onSelectComponent?.('bubble', 'user')}
-              className={`relative z-1 box-border w-fit min-w-[36px] max-w-full bg-transparent border-none text-[13px] leading-[1.3] break-words whitespace-pre-wrap cursor-pointer transition-all text-left ${
+              className={`sully-bubble-user chat-bubble-role-user w-fit min-w-[36px] max-w-full text-[13px] leading-[1.3] break-words whitespace-pre-wrap cursor-pointer transition-all text-left ${
                 activeRole === 'user' && activeComponent === 'bubble'
                   ? 'ring-2 ring-black ring-offset-2 scale-[1.01]'
                   : 'hover:opacity-90'
               }`}
-              style={{
-                padding: `${user.pad[0]}px ${user.pad[1]}px ${user.pad[2]}px ${user.pad[3]}px`,
-                color: user.textColor,
-              }}
+              style={isDirectBorderModel ? userBubbleStyleDirect : userBubbleStyleLink}
             >
-              <div
-                className="absolute inset-0 -z-1 pointer-events-none"
-                style={{
-                  borderStyle: 'solid',
-                  borderColor: 'transparent',
-                  borderImageRepeat: 'stretch',
-                  borderImageSource: `url('${user.url}')`,
-                  borderImageSlice: `${user.slice[0]} ${user.slice[1]} ${user.slice[2]} ${user.slice[3]} fill`,
-                  borderWidth: `${bwUser[0]}px ${bwUser[1]}px ${bwUser[2]}px ${bwUser[3]}px`,
-                  borderImageWidth: user.patternScale,
-                }}
-              />
-              你收一下转账，今晚请你喝奶茶~
+              {!isDirectBorderModel && (
+                <div
+                  className="absolute inset-0 -z-1 pointer-events-none"
+                  style={{
+                    borderStyle: 'solid',
+                    borderColor: 'transparent',
+                    borderImageRepeat: 'stretch',
+                    borderImageSource: `url('${user.url}')`,
+                    borderImageSlice: `${user.slice[0]} ${user.slice[1]} ${user.slice[2]} ${user.slice[3]} fill`,
+                    borderWidth: `${bwUser[0]}px ${bwUser[1]}px ${bwUser[2]}px ${bwUser[3]}px`,
+                    borderImageWidth: user.patternScale,
+                  }}
+                />
+              )}
+              {currentPlatform === 'float' ? (
+                <div className="chat-markdown">
+                  <p className="m-0 leading-snug">你收一下转账，今晚请你喝奶茶~</p>
+                </div>
+              ) : (
+                <span>你收一下转账，今晚请你喝奶茶~</span>
+              )}
             </div>
           </div>
 
-          {/* 5. 用户发送方：独立语音条 */}
+          {/* 6. 用户发送方：独立语音条 */}
           <div className="flex flex-col items-end self-end">
             <div
               id="voice-user-preview"
               style={userVoiceStyle}
               onClick={() => onSelectComponent?.('voice', 'user')}
-              className={`flex items-center justify-end gap-2 cursor-pointer w-36 h-8 text-xs font-bold select-none transition-all ${
+              className={`sully-voice-bar voice-msg-bubble flex items-center justify-end gap-2 cursor-pointer w-36 h-8 text-xs font-bold select-none transition-all ${
                 activeRole === 'user' && activeComponent === 'voice'
                   ? 'ring-2 ring-black ring-offset-2 scale-[1.01]'
                   : 'hover:opacity-90'
               }`}
             >
-              <span style={{ color: user.textColor }}>3"</span>
-              <div className="flex items-center gap-0.5">
+              <span className="voice-msg-dur" style={{ color: user.textColor }}>3"</span>
+              <div className="voice-msg-bar voice-msg-bars flex items-center gap-0.5" data-playing={isPlayingUser ? 'true' : undefined}>
                 {[10, 14, 18, 12, 16, 10, 14, 8].map((h, idx) => (
                   <span
                     key={idx}
@@ -348,7 +547,7 @@ export const PreviewSection: React.FC<PreviewSectionProps> = ({
                 ))}
               </div>
               <div
-                className="w-5 h-5 rounded-full flex items-center justify-center cursor-pointer"
+                className="voice-msg-icon w-5 h-5 rounded-full flex items-center justify-center cursor-pointer"
                 style={{ backgroundColor: 'rgba(0,0,0,0.06)' }}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -364,7 +563,7 @@ export const PreviewSection: React.FC<PreviewSectionProps> = ({
             </div>
           </div>
 
-          {/* 6. 用户发送方：转账卡片 */}
+          {/* 7. 用户发送方：转账卡片 */}
           <div className="flex flex-col items-end self-end">
             <div
               id="bubble-user-transfer-card"
@@ -373,13 +572,13 @@ export const PreviewSection: React.FC<PreviewSectionProps> = ({
                 onSelectComponent?.('transfer', 'user');
                 setModalRole('user');
               }}
-              className={`w-60 sm:w-64 cursor-pointer text-xs transition-all ${
+              className={`sully-transfer-card chat-transfer-card w-60 sm:w-64 cursor-pointer text-xs transition-all ${
                 activeRole === 'user' && activeComponent === 'transfer'
                   ? 'ring-2 ring-black ring-offset-2 scale-[1.01]'
                   : 'hover:opacity-90'
               }`}
             >
-              <div className="flex items-center gap-2.5 pb-2 border-b border-black/10">
+              <div className="chat-transfer-body flex items-center gap-2.5 pb-2 border-b border-black/10">
                 <div
                   className="w-7 h-7 rounded-full bg-white flex items-center justify-center font-bold text-xs shadow-xs shrink-0"
                   style={{ border: `1.5px solid ${userTransferTextColor}`, color: userTransferTextColor }}
@@ -432,28 +631,55 @@ export const PreviewSection: React.FC<PreviewSectionProps> = ({
             </span>
 
             {activeComponent === 'bubble' && (
-              <div
-                className="relative z-1 box-border text-[13px] leading-[1.3] break-words select-none transition-all"
-                style={{
-                  width: `${stretchWidth}px`,
-                  padding: `${currentCompData.pad[0]}px ${currentCompData.pad[1]}px ${currentCompData.pad[2]}px ${currentCompData.pad[3]}px`,
-                  color: currentRoleData.textColor,
-                }}
-              >
+              isDirectBorderModel ? (
                 <div
-                  className="absolute inset-0 -z-1 pointer-events-none"
+                  className="box-border text-[13px] leading-[1.3] break-words select-none transition-all"
                   style={{
+                    width: `${stretchWidth}px`,
+                    boxSizing: 'border-box',
                     borderStyle: 'solid',
                     borderColor: 'transparent',
-                    borderImageRepeat: 'stretch',
+                    borderWidth: `${currentBw[0]}px ${currentBw[1]}px ${currentBw[2]}px ${currentBw[3]}px`,
                     borderImageSource: `url('${currentCompData.url}')`,
                     borderImageSlice: `${currentCompData.slice[0]} ${currentCompData.slice[1]} ${currentCompData.slice[2]} ${currentCompData.slice[3]} fill`,
-                    borderWidth: `${currentBw[0]}px ${currentBw[1]}px ${currentBw[2]}px ${currentBw[3]}px`,
+                    borderImageRepeat: 'stretch',
                     borderImageWidth: currentCompData.patternScale,
+                    padding: `${currentCompData.pad[0]}px ${currentCompData.pad[1]}px ${currentCompData.pad[2]}px ${currentCompData.pad[3]}px`,
+                    color: currentRoleData.textColor,
                   }}
-                />
-                {testCustomText}
-              </div>
+                >
+                  {currentPlatform === 'float' ? (
+                    <div className="chat-markdown">
+                      <p className="m-0 leading-snug">{testCustomText}</p>
+                    </div>
+                  ) : (
+                    testCustomText
+                  )}
+                </div>
+              ) : (
+                <div
+                  className="relative z-1 box-border text-[13px] leading-[1.3] break-words select-none transition-all"
+                  style={{
+                    width: `${stretchWidth}px`,
+                    padding: `${currentCompData.pad[0]}px ${currentCompData.pad[1]}px ${currentCompData.pad[2]}px ${currentCompData.pad[3]}px`,
+                    color: currentRoleData.textColor,
+                  }}
+                >
+                  <div
+                    className="absolute inset-0 -z-1 pointer-events-none"
+                    style={{
+                      borderStyle: 'solid',
+                      borderColor: 'transparent',
+                      borderImageRepeat: 'stretch',
+                      borderImageSource: `url('${currentCompData.url}')`,
+                      borderImageSlice: `${currentCompData.slice[0]} ${currentCompData.slice[1]} ${currentCompData.slice[2]} ${currentCompData.slice[3]} fill`,
+                      borderWidth: `${currentBw[0]}px ${currentBw[1]}px ${currentBw[2]}px ${currentBw[3]}px`,
+                      borderImageWidth: currentCompData.patternScale,
+                    }}
+                  />
+                  {testCustomText}
+                </div>
+              )
             )}
 
             {activeComponent === 'voice' && (

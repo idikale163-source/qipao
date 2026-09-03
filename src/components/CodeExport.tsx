@@ -40,6 +40,7 @@ export const CodeExport: React.FC<CodeExportProps> = ({
             className="text-xs font-black bg-[#f0f2f5] border-2 border-black rounded-lg px-3 py-1.5 text-black cursor-pointer shadow-[2px_2px_0px_#000] focus:outline-none"
           >
             <option value="sully">Sully 全局定制模板 (彻底修复语音/转账卡)</option>
+            <option value="float">Float 聊天室专用模板 (纯正 Float 类名规范)</option>
             <option value="link">LINK 线上页模板 (全套组件颜色联动)</option>
           </select>
 
