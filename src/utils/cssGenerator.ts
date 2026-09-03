@@ -340,7 +340,7 @@ export function generateSullyCSS(config: AppConfig): string {
   const receiptSlice = userTransfer.slice || [51, 58, 43, 52];
 
   return `/* =======================================================
-   Sully 全局视觉定制方案 (官方标准 ::before 双层隔离版)
+   Sully 全局视觉定制方案 (官方标准单层盒模型直出版)
    ======================================================= */
 
 /* -------------------------------------------------------
@@ -389,9 +389,52 @@ export function generateSullyCSS(config: AppConfig): string {
 }
 
 /* -------------------------------------------------------
-   1. 气泡通用容器与 ::before 背景层
+   1. 气泡单层直出盒模型 (与物理边框无缝配合，正确定位文字)
    ------------------------------------------------------- */
-.sully-bubble-ai,
+
+/* 1.1 AI 角色气泡 */
+.sully-bubble-ai {
+  position: relative !important;
+  box-sizing: border-box !important;
+  width: fit-content !important;
+  min-width: 35px !important;
+  min-height: 28px !important;
+  max-width: calc(100vw - 60px) !important;
+  height: auto !important;
+  flex: 0 1 auto !important;
+  margin-left: 4px !important;
+  margin-right: auto !important;
+  margin-top: 5px !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  border-style: solid !important;
+  border-color: transparent !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+
+  border-width: ${bwAi[0]}px ${bwAi[1]}px ${bwAi[2]}px ${bwAi[3]}px !important;
+  border-image-source: url('${ai.url}') !important;
+  border-image-slice: ${ai.slice[0]} ${ai.slice[1]} ${ai.slice[2]} ${ai.slice[3]} fill !important;
+  border-image-repeat: stretch !important;
+  border-image-width: ${ai.patternScale} !important;
+
+  padding: ${ai.pad[0]}px ${ai.pad[1]}px ${ai.pad[2]}px ${ai.pad[3]}px !important;
+  color: ${ai.textColor} !important;
+  -webkit-text-fill-color: ${ai.textColor} !important;
+  line-height: 1.35 !important;
+  word-break: break-word !important;
+  overflow-wrap: anywhere !important;
+  z-index: 1 !important;
+}
+
+.sully-bubble-ai * {
+  background-color: transparent !important;
+  color: ${ai.textColor} !important;
+  -webkit-text-fill-color: ${ai.textColor} !important;
+}
+
+/* 1.2 用户发送方气泡 */
 .sully-bubble-user {
   position: relative !important;
   box-sizing: border-box !important;
@@ -401,74 +444,34 @@ export function generateSullyCSS(config: AppConfig): string {
   max-width: calc(100vw - 60px) !important;
   height: auto !important;
   flex: 0 1 auto !important;
+  margin-left: auto !important;
+  margin-right: 4px !important;
+  margin-top: 5px !important;
   background: transparent !important;
   background-color: transparent !important;
-  border: none !important;
+  border-style: solid !important;
+  border-color: transparent !important;
   border-radius: 0 !important;
   box-shadow: none !important;
   overflow: visible !important;
-  margin-top: 5px !important;
-  line-height: 1.35 !important;
-  z-index: 1 !important;
-}
 
-.sully-bubble-ai *,
-.sully-bubble-user * {
-  background-color: transparent !important;
-}
-
-.sully-bubble-ai::before,
-.sully-bubble-user::before {
-  content: "" !important;
-  display: block !important;
-  position: absolute !important;
-  top: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  bottom: 0 !important;
-  z-index: -1 !important;
-  pointer-events: none !important;
-  border-style: solid !important;
-  border-color: transparent !important;
+  border-width: ${bwUser[0]}px ${bwUser[1]}px ${bwUser[2]}px ${bwUser[3]}px !important;
+  border-image-source: url('${user.url}') !important;
+  border-image-slice: ${user.slice[0]} ${user.slice[1]} ${user.slice[2]} ${user.slice[3]} fill !important;
   border-image-repeat: stretch !important;
-}
+  border-image-width: ${user.patternScale} !important;
 
-/* 1.1 AI 角色气泡 */
-.sully-bubble-ai {
-  margin-left: 4px !important;
-  margin-right: auto !important;
-  padding: ${ai.pad[0]}px ${ai.pad[1]}px ${ai.pad[2]}px ${ai.pad[3]}px !important;
-  color: ${ai.textColor} !important;
-  -webkit-text-fill-color: ${ai.textColor} !important;
-}
-
-.sully-bubble-ai::before {
-  border-image-source: url('${ai.url}') !important;
-  border-image-slice: ${ai.slice[0]} ${ai.slice[1]} ${ai.slice[2]} ${ai.slice[3]} fill !important;
-  border-width: ${bwAi[0]}px ${bwAi[1]}px ${bwAi[2]}px ${bwAi[3]}px !important;
-}
-
-.sully-bubble-ai * {
-  color: ${ai.textColor} !important;
-  -webkit-text-fill-color: ${ai.textColor} !important;
-}
-
-/* 1.2 用户发送方气泡 */
-.sully-bubble-user {
-  margin-left: auto !important;
-  margin-right: 4px !important;
   padding: ${user.pad[0]}px ${user.pad[1]}px ${user.pad[2]}px ${user.pad[3]}px !important;
   color: ${user.textColor} !important;
   -webkit-text-fill-color: ${user.textColor} !important;
-}
-
-.sully-bubble-user::before {
-  border-image-source: url('${user.url}') !important;
-  border-image-slice: ${user.slice[0]} ${user.slice[1]} ${user.slice[2]} ${user.slice[3]} fill !important;
-  border-width: ${bwUser[0]}px ${bwUser[1]}px ${bwUser[2]}px ${bwUser[3]}px !important;
+  line-height: 1.35 !important;
+  word-break: break-word !important;
+  overflow-wrap: anywhere !important;
+  z-index: 1 !important;
 }
 
 .sully-bubble-user * {
+  background-color: transparent !important;
   color: ${user.textColor} !important;
   -webkit-text-fill-color: ${user.textColor} !important;
 }
@@ -771,7 +774,9 @@ div[class*="rounded-2xl"][class*="shadow-sm"][class*="border"][class*="w-fit"] *
    7. 清理多余图层与伪元素
    ------------------------------------------------------- */
 .sully-bubble-ai::after,
+.sully-bubble-ai::before,
 .sully-bubble-user::after,
+.sully-bubble-user::before,
 .sully-voice-bar::after,
 .sully-voice-bar::before {
   display: none !important;

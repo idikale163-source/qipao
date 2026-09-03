@@ -22,7 +22,7 @@ export const PreviewSection: React.FC<PreviewSectionProps> = ({
 }) => {
   const { ai, user } = config;
   const currentPlatform: ExportType = (exportType as ExportType) || 'sully';
-  const isDirectBorderModel = currentPlatform === 'float';
+  const isDirectBorderModel = currentPlatform === 'sully' || currentPlatform === 'float';
 
   const [isPlayingAi, setIsPlayingAi] = useState(false);
   const [isPlayingUser, setIsPlayingUser] = useState(false);
