@@ -771,9 +771,7 @@ div[class*="rounded-2xl"][class*="shadow-sm"][class*="border"][class*="w-fit"] *
    7. 清理多余图层与伪元素
    ------------------------------------------------------- */
 .sully-bubble-ai::after,
-.sully-bubble-ai::before,
 .sully-bubble-user::after,
-.sully-bubble-user::before,
 .sully-voice-bar::after,
 .sully-voice-bar::before {
   display: none !important;
