@@ -1,0 +1,6 @@
+{
+  "name": "九宫格气泡切片与CSS生成器",
+  "description": "专为 Sully 和 LINK 设计的九宫格气泡切片定制工具，支持语音条与转账卡片双向互斥、全组件颜色联动及实时预览",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
