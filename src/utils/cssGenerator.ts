@@ -1,17 +1,51 @@
 import { AppConfig, ExportType, QuadrantValues } from '../types';
 
 export function calcSafeBw(slice: QuadrantValues): QuadrantValues {
+  // 1. 精确匹配 Sully 社区与实测特定气泡经典数值
+  if (slice[0] === 435 && slice[1] === 371 && slice[2] === 210 && slice[3] === 310) {
+    return [24, 21, 12, 17];
+  }
+  if (slice[0] === 437 && slice[1] === 377 && slice[2] === 210 && slice[3] === 338) {
+    return [24, 21, 12, 19];
+  }
   if (slice[0] === 52 && slice[1] === 63 && slice[2] === 47 && slice[3] === 73) {
     return [6, 9, 5, 10];
   }
   if (slice[0] === 51 && slice[1] === 58 && slice[2] === 43 && slice[3] === 52) {
     return [6, 7, 5, 7];
   }
+
+  const maxSlice = Math.max(...slice);
+
+  // 2. 高清大图（如 1000px+ 原图切片，切片数值达到 200~600px）
+  // 比例约为 0.052 ~ 0.058，物理边框落在 12px ~ 26px 之间，彻底避免将小熊拱门撑成百像素巨塔
+  if (maxSlice >= 200) {
+    const scale = 0.055;
+    return [
+      Math.max(6, Math.min(28, Math.round(slice[0] * scale))),
+      Math.max(6, Math.min(28, Math.round(slice[1] * scale))),
+      Math.max(6, Math.min(24, Math.round(slice[2] * scale))),
+      Math.max(6, Math.min(28, Math.round(slice[3] * scale))),
+    ];
+  }
+
+  // 3. 中等分辨率素材（100~200px 级别）
+  if (maxSlice >= 90) {
+    const scale = 0.085;
+    return [
+      Math.max(5, Math.min(20, Math.round(slice[0] * scale))),
+      Math.max(5, Math.min(20, Math.round(slice[1] * scale))),
+      Math.max(4, Math.min(16, Math.round(slice[2] * scale))),
+      Math.max(5, Math.min(20, Math.round(slice[3] * scale))),
+    ];
+  }
+
+  // 4. 标准低分辨率小图（40~80px 级别）
   return [
-    Math.max(4, Math.round(slice[0] * 0.15)),
-    Math.max(4, Math.round(slice[1] * 0.15)),
-    Math.max(4, Math.round(slice[2] * 0.15)),
-    Math.max(4, Math.round(slice[3] * 0.15)),
+    Math.max(4, Math.min(14, Math.round(slice[0] * 0.13))),
+    Math.max(4, Math.min(14, Math.round(slice[1] * 0.13))),
+    Math.max(3, Math.min(12, Math.round(slice[2] * 0.13))),
+    Math.max(4, Math.min(14, Math.round(slice[3] * 0.13))),
   ];
 }
 
@@ -306,81 +340,198 @@ export function generateSullyCSS(config: AppConfig): string {
   const receiptSlice = userTransfer.slice || [51, 58, 43, 52];
 
   return `/* =======================================================
-   Sully 全局视觉定制方案加入白框
+   Sully 全局视觉定制方案 (官方标准 ::before 双层隔离版)
    ======================================================= */
 
 /* -------------------------------------------------------
-   1. AI 角色气泡 
+   0. 容器与滑动流畅度优化
    ------------------------------------------------------- */
-.sully-bubble-ai {
-  position: relative !important;
-  background: transparent !important;
-  border-style: solid !important;
-  border-color: transparent !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
-  box-sizing: border-box !important;
-
-  /* 物理边框维持紧凑矮版 */
-  border-width: ${bwAi[0]}px ${bwAi[1]}px ${bwAi[2]}px ${bwAi[3]}px !important;
-  border-image-source: url('${ai.url}') !important;
-  border-image-slice: ${ai.slice[0]} ${ai.slice[1]} ${ai.slice[2]} ${ai.slice[3]} fill !important;
-  border-image-repeat: stretch !important;
-  /* 仅放大素材图案本身，不改变气泡容器体积 */
-  border-image-width: ${ai.patternScale} !important;
-
-  padding: ${ai.pad[0]}px ${ai.pad[1]}px ${ai.pad[2]}px ${ai.pad[3]}px !important;
-  color: ${ai.textColor} !important;
-  -webkit-text-fill-color: ${ai.textColor} !important;
-  margin-top: 5px !important;
-  line-height: 1.25 !important;
-  word-break: break-word !important;
-  overflow-wrap: anywhere !important;
-  min-height: 24px !important;
-  height: auto !important;
+.sully-chat-container {
+  overflow-x: hidden !important;
 }
 
-.sully-bubble-ai * {
-  background-color: transparent !important;
-  color: ${ai.textColor} !important;
-  -webkit-text-fill-color: ${ai.textColor} !important;
-  line-height: 1.25 !important;
+.sully-chat-messages {
+  padding-left: 0px !important;
+  padding-right: 0px !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  touch-action: pan-y !important;
+  overscroll-behavior-y: contain !important;
+  scrollbar-width: none !important;
+}
+
+.sully-chat-messages::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+.sully-chat-bubble-wrapper,
+.sully-chat-bubble-wrapper div[class*="message-content"] {
+  position: relative !important;
+  z-index: 10 !important;
+  display: flex !important;
+  align-items: flex-start !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  overflow: visible !important;
+}
+
+.sully-chat-messages > *:has(.sully-bubble-ai) {
+  margin-left: 0 !important;
+}
+
+.sully-chat-messages > *:has(.sully-bubble-user) {
+  margin-right: 0 !important;
 }
 
 /* -------------------------------------------------------
-   2. 用户发送方气泡
+   1. 气泡通用容器与 ::before 背景层
    ------------------------------------------------------- */
+.sully-bubble-ai,
 .sully-bubble-user {
   position: relative !important;
+  box-sizing: border-box !important;
+  width: fit-content !important;
+  min-width: 35px !important;
+  min-height: 28px !important;
+  max-width: calc(100vw - 60px) !important;
+  height: auto !important;
+  flex: 0 1 auto !important;
   background: transparent !important;
-  border-style: solid !important;
-  border-color: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
   border-radius: 0 !important;
   box-shadow: none !important;
-  box-sizing: border-box !important;
+  overflow: visible !important;
+  margin-top: 5px !important;
+  line-height: 1.35 !important;
+  z-index: 1 !important;
+}
 
-  border-width: ${bwUser[0]}px ${bwUser[1]}px ${bwUser[2]}px ${bwUser[3]}px !important;
-  border-image-source: url('${user.url}') !important;
-  border-image-slice: ${user.slice[0]} ${user.slice[1]} ${user.slice[2]} ${user.slice[3]} fill !important;
+.sully-bubble-ai *,
+.sully-bubble-user * {
+  background-color: transparent !important;
+}
+
+.sully-bubble-ai::before,
+.sully-bubble-user::before {
+  content: "" !important;
+  display: block !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  z-index: -1 !important;
+  pointer-events: none !important;
+  border-style: solid !important;
+  border-color: transparent !important;
   border-image-repeat: stretch !important;
-  border-image-width: ${user.patternScale} !important;
+}
 
+/* 1.1 AI 角色气泡 */
+.sully-bubble-ai {
+  margin-left: 4px !important;
+  margin-right: auto !important;
+  padding: ${ai.pad[0]}px ${ai.pad[1]}px ${ai.pad[2]}px ${ai.pad[3]}px !important;
+  color: ${ai.textColor} !important;
+  -webkit-text-fill-color: ${ai.textColor} !important;
+}
+
+.sully-bubble-ai::before {
+  border-image-source: url('${ai.url}') !important;
+  border-image-slice: ${ai.slice[0]} ${ai.slice[1]} ${ai.slice[2]} ${ai.slice[3]} fill !important;
+  border-width: ${bwAi[0]}px ${bwAi[1]}px ${bwAi[2]}px ${bwAi[3]}px !important;
+}
+
+.sully-bubble-ai * {
+  color: ${ai.textColor} !important;
+  -webkit-text-fill-color: ${ai.textColor} !important;
+}
+
+/* 1.2 用户发送方气泡 */
+.sully-bubble-user {
+  margin-left: auto !important;
+  margin-right: 4px !important;
   padding: ${user.pad[0]}px ${user.pad[1]}px ${user.pad[2]}px ${user.pad[3]}px !important;
   color: ${user.textColor} !important;
   -webkit-text-fill-color: ${user.textColor} !important;
-  margin-top: 5px !important;
-  line-height: 1.25 !important;
-  word-break: break-word !important;
-  overflow-wrap: anywhere !important;
-  min-height: 24px !important;
-  height: auto !important;
+}
+
+.sully-bubble-user::before {
+  border-image-source: url('${user.url}') !important;
+  border-image-slice: ${user.slice[0]} ${user.slice[1]} ${user.slice[2]} ${user.slice[3]} fill !important;
+  border-width: ${bwUser[0]}px ${bwUser[1]}px ${bwUser[2]}px ${bwUser[3]}px !important;
 }
 
 .sully-bubble-user * {
-  background-color: transparent !important;
   color: ${user.textColor} !important;
   -webkit-text-fill-color: ${user.textColor} !important;
-  line-height: 1.25 !important;
+}
+
+/* -------------------------------------------------------
+   2. 文本块排版净化 (杜绝行间撕裂与默认白底)
+   ------------------------------------------------------- */
+.sully-bubble-text {
+  position: relative !important;
+  z-index: 20 !important;
+  display: block !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  height: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  line-height: 1.35 !important;
+  white-space: pre-wrap !important;
+  word-break: break-word !important;
+  overflow-wrap: anywhere !important;
+  text-align: left !important;
+}
+
+.sully-bubble-text p,
+.sully-bubble-text span,
+.sully-bubble-text div:not(.sully-voice-bubble):not(.sully-transfer-top):not(.sully-transfer-bottom),
+.sully-bubble-text blockquote,
+.sully-bubble-text strong,
+.sully-bubble-text em,
+.sully-bubble-text a {
+  box-sizing: border-box !important;
+  width: auto !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  background-color: transparent !important;
+  white-space: pre-wrap !important;
+  word-break: break-word !important;
+  overflow-wrap: anywhere !important;
+}
+
+.sully-bubble-text p,
+.sully-bubble-text > div {
+  margin-top: 0 !important;
+  margin-bottom: 3px !important;
+}
+
+.sully-bubble-text p:last-child,
+.sully-bubble-text > div:last-child {
+  margin-bottom: 0 !important;
+}
+
+.sully-bubble-ai .sully-bubble-text,
+.sully-bubble-user .sully-bubble-text {
+  transform: none !important;
+  margin: 0 !important;
 }
 
 /* -------------------------------------------------------
