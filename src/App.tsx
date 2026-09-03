@@ -14,7 +14,8 @@ import { ColorPanel } from './components/ColorPanel';
 import { ModalStrategyControl } from './components/ModalStrategyControl';
 import { PreviewSection } from './components/PreviewSection';
 import { CodeExport } from './components/CodeExport';
-import { Upload, Link2, RefreshCw } from 'lucide-react';
+import { MobileLivePreviewDock, MobileViewMode } from './components/MobileLivePreviewDock';
+import { Upload, Link2, RefreshCw, Smartphone } from 'lucide-react';
 
 const mkComp = (url: string, slice: QuadrantValues, pad: QuadrantValues, patternScale = 1.4): ComponentConfig => ({
   url,
@@ -74,6 +75,7 @@ export default function App() {
   const [activeComponent, setActiveComponent] = useState<ActiveComponent>('bubble');
   const [activeMode, setActiveMode] = useState<ActiveMode>('s');
   const [exportType, setExportType] = useState<ExportType>('sully');
+  const [mobileViewMode, setMobileViewMode] = useState<MobileViewMode>('split');
   const [urlInput, setUrlInput] = useState('');
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -374,7 +376,22 @@ export default function App() {
       </header>
 
       {/* 主体工作区 */}
-      <main className="max-w-7xl mx-auto px-3 sm:px-4 pt-3 space-y-3">
+      <main className="max-w-7xl mx-auto px-3 sm:px-4 pt-1 sm:pt-3 space-y-3">
+        {/* 移动端专属：边调边看即时视窗 (吸顶分屏 / 悬浮画中画) */}
+        <MobileLivePreviewDock
+          config={config}
+          activeRole={activeRole}
+          activeComponent={activeComponent}
+          exportType={exportType}
+          mobileViewMode={mobileViewMode}
+          onSelectMobileViewMode={setMobileViewMode}
+          onSelectExportType={setExportType}
+          onSelectComponent={(comp, role) => {
+            setActiveComponent(comp);
+            setActiveRole(role);
+          }}
+        />
+
         {/* 紧凑统一快捷控制条 (角色 / 组件 / 模式 / 换图 一览无余) */}
         <div className="bg-white rounded-xl p-2.5 border-2 border-black shadow-[3px_3px_0px_#000] flex flex-wrap items-center justify-between gap-2.5">
           {/* 1. 角色选择 */}
@@ -530,6 +547,7 @@ export default function App() {
               activeRole={activeRole}
               activeComp={activeComponent}
               activeMode={activeMode}
+              exportType={exportType}
               textColor={roleConfig.textColor}
               onUpdateSlice={handleUpdateSlice}
               onUpdatePad={handleUpdatePad}

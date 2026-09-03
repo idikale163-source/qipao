@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { ActiveComp, ActiveMode, ActiveRole, ComponentConfig, QuadrantValues } from '../types';
+import { ActiveComp, ActiveMode, ActiveRole, ComponentConfig, ExportType, QuadrantValues } from '../types';
 import { Minus, Plus, Info, RefreshCw, Eye, Sparkles } from 'lucide-react';
 import { calcSafeBw } from '../utils/cssGenerator';
 
@@ -8,6 +8,7 @@ interface SlicingCanvasProps {
   activeRole: ActiveRole;
   activeComp: ActiveComp;
   activeMode: ActiveMode;
+  exportType?: ExportType;
   textColor?: string;
   onUpdateSlice: (index: number, value: number) => void;
   onUpdatePad: (index: number, value: number) => void;
@@ -20,6 +21,7 @@ export const SlicingCanvas: React.FC<SlicingCanvasProps> = ({
   activeRole,
   activeComp,
   activeMode,
+  exportType = 'sully',
   textColor = '#000000',
   onUpdateSlice,
   onUpdatePad,
@@ -451,23 +453,24 @@ export const SlicingCanvas: React.FC<SlicingCanvasProps> = ({
                   <button
                     type="button"
                     onClick={() => updateFn(i, Math.max(0, val - 1))}
-                    className="w-6 h-6 flex items-center justify-center rounded-md border-2 border-black bg-white hover:bg-black hover:text-white text-black font-black shadow-[1px_1px_0px_#000] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all"
+                    className="w-8 h-8 sm:w-7 sm:h-7 flex items-center justify-center rounded-lg border-2 border-black bg-white hover:bg-black hover:text-white text-black font-black shadow-[1.5px_1.5px_0px_#000] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all touch-manipulation"
+                    aria-label={`减少 ${label}`}
                   >
-                    <Minus className="w-3 h-3" />
+                    <Minus className="w-3.5 h-3.5" />
                   </button>
                   <input
                     type="number"
                     value={val}
                     onChange={(e) => updateFn(i, Math.max(0, parseInt(e.target.value) || 0))}
-                    className="w-9 text-center text-xs font-black text-black bg-transparent border-none focus:outline-none"
-                  >
-                  </input>
+                    className="w-10 text-center text-xs font-black text-black bg-transparent border-none focus:outline-none"
+                  />
                   <button
                     type="button"
                     onClick={() => updateFn(i, val + 1)}
-                    className="w-6 h-6 flex items-center justify-center rounded-md border-2 border-black bg-white hover:bg-black hover:text-white text-black font-black shadow-[1px_1px_0px_#000] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all"
+                    className="w-8 h-8 sm:w-7 sm:h-7 flex items-center justify-center rounded-lg border-2 border-black bg-white hover:bg-black hover:text-white text-black font-black shadow-[1.5px_1.5px_0px_#000] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all touch-manipulation"
+                    aria-label={`增加 ${label}`}
                   >
-                    <Plus className="w-3 h-3" />
+                    <Plus className="w-3.5 h-3.5" />
                   </button>
                 </div>
               </div>
@@ -490,15 +493,9 @@ export const SlicingCanvas: React.FC<SlicingCanvasProps> = ({
 
         <div className="bg-[#f0f2f5] p-3 rounded-xl border-2 border-black/30 flex items-center justify-center min-h-[70px] overflow-hidden">
           {activeComp === 'bubble' && (
-            <div
-              className="relative z-1 box-border w-fit max-w-full text-xs font-medium select-none"
-              style={{
-                padding: `${currentComp.pad[0]}px ${currentComp.pad[1]}px ${currentComp.pad[2]}px ${currentComp.pad[3]}px`,
-                color: textColor,
-              }}
-            >
+            (exportType === 'sully' || exportType === 'float') ? (
               <div
-                className="absolute inset-0 -z-1 pointer-events-none"
+                className="box-border w-fit max-w-full text-xs font-medium select-none"
                 style={{
                   borderStyle: 'solid',
                   borderColor: 'transparent',
@@ -507,10 +504,35 @@ export const SlicingCanvas: React.FC<SlicingCanvasProps> = ({
                   borderImageSlice: `${currentComp.slice[0]} ${currentComp.slice[1]} ${currentComp.slice[2]} ${currentComp.slice[3]} fill`,
                   borderWidth: `${calcSafeBw(currentComp.slice)[0]}px ${calcSafeBw(currentComp.slice)[1]}px ${calcSafeBw(currentComp.slice)[2]}px ${calcSafeBw(currentComp.slice)[3]}px`,
                   borderImageWidth: currentComp.patternScale,
+                  padding: `${currentComp.pad[0]}px ${currentComp.pad[1]}px ${currentComp.pad[2]}px ${currentComp.pad[3]}px`,
+                  color: textColor,
                 }}
-              />
-              即时预览切片：角落不被拉伸，中间平滑扩展
-            </div>
+              >
+                即时预览切片：角落不被拉伸，中间平滑扩展
+              </div>
+            ) : (
+              <div
+                className="relative z-1 box-border w-fit max-w-full text-xs font-medium select-none"
+                style={{
+                  padding: `${currentComp.pad[0]}px ${currentComp.pad[1]}px ${currentComp.pad[2]}px ${currentComp.pad[3]}px`,
+                  color: textColor,
+                }}
+              >
+                <div
+                  className="absolute inset-0 -z-1 pointer-events-none"
+                  style={{
+                    borderStyle: 'solid',
+                    borderColor: 'transparent',
+                    borderImageRepeat: 'stretch',
+                    borderImageSource: `url('${currentComp.url}')`,
+                    borderImageSlice: `${currentComp.slice[0]} ${currentComp.slice[1]} ${currentComp.slice[2]} ${currentComp.slice[3]} fill`,
+                    borderWidth: `${calcSafeBw(currentComp.slice)[0]}px ${calcSafeBw(currentComp.slice)[1]}px ${calcSafeBw(currentComp.slice)[2]}px ${calcSafeBw(currentComp.slice)[3]}px`,
+                    borderImageWidth: currentComp.patternScale,
+                  }}
+                />
+                即时预览切片：角落不被拉伸，中间平滑扩展
+              </div>
+            )
           )}
 
           {activeComp === 'voice' && (
