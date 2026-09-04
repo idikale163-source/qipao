@@ -538,110 +538,7 @@ export function generateSullyCSS(config: AppConfig): string {
 }
 
 /* -------------------------------------------------------
-   3. 语音条独立组件 (维持 34px 矮版)
-   ------------------------------------------------------- */
-.sully-voice-bar,
-div[class*="max-w-[260px]"]:has(button),
-div[class*="max-w-[200px]"]:has(button),
-.sully-bubble-ai div[class*="max-w-[260px]"],
-.sully-bubble-user div[class*="max-w-[260px]"] {
-  height: 34px !important;
-  min-height: 34px !important;
-  max-height: 34px !important;
-  box-sizing: border-box !important;
-  display: flex !important;
-  align-items: center !important;
-}
-
-/* AI 语音条素材 */
-.sully-bubble-ai .sully-voice-bar,
-.sully-bubble-ai div[class*="max-w-[260px]"] > button,
-.sully-bubble-ai div[class*="max-w-[260px]"] > div,
-.sully-bubble-ai div[class*="max-w-[200px]"] > button,
-.sully-bubble-ai div[class*="max-w-[200px]"] > div,
-div[class*="justify-start"] div[class*="max-w-[260px]"] > button,
-div[class*="items-start"] div[class*="max-w-[260px]"] > button,
-div:not([class*="justify-end"]):not([class*="items-end"]):not([class*="flex-row-reverse"]):not([class*="self-end"]):not([class*="ml-auto"]) > div[class*="max-w-[260px]"] > button {
-  background: transparent !important;
-  border-style: solid !important;
-  border-color: transparent !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
-  border-width: ${bwAiVoice[0]}px ${bwAiVoice[1]}px ${bwAiVoice[2]}px ${bwAiVoice[3]}px !important;
-  border-image-source: url('${aiVoice.url}') !important;
-  border-image-slice: ${aiVoice.slice[0]} ${aiVoice.slice[1]} ${aiVoice.slice[2]} ${aiVoice.slice[3]} fill !important;
-  border-image-repeat: stretch !important;
-  border-image-width: ${aiVoice.patternScale} !important;
-  padding: ${aiVoice.pad[0]}px ${aiVoice.pad[1]}px ${aiVoice.pad[2]}px ${aiVoice.pad[3]}px !important;
-}
-
-/* 用户语音条素材 */
-.sully-bubble-user .sully-voice-bar,
-.sully-bubble-user div[class*="max-w-[260px]"] > button,
-.sully-bubble-user div[class*="max-w-[260px]"] > div,
-.sully-bubble-user div[class*="max-w-[200px]"] > button,
-.sully-bubble-user div[class*="max-w-[200px]"] > div,
-div[class*="justify-end"] div[class*="max-w-[260px]"] > button,
-div[class*="flex-row-reverse"] div[class*="max-w-[260px]"] > button,
-div[class*="self-end"] div[class*="max-w-[260px]"] > button,
-div[class*="ml-auto"] div[class*="max-w-[260px]"] > button {
-  background: transparent !important;
-  border-style: solid !important;
-  border-color: transparent !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
-  border-width: ${bwUserVoice[0]}px ${bwUserVoice[1]}px ${bwUserVoice[2]}px ${bwUserVoice[3]}px !important;
-  border-image-source: url('${userVoice.url}') !important;
-  border-image-slice: ${userVoice.slice[0]} ${userVoice.slice[1]} ${userVoice.slice[2]} ${userVoice.slice[3]} fill !important;
-  border-image-repeat: stretch !important;
-  border-image-width: ${userVoice.patternScale} !important;
-  padding: ${userVoice.pad[0]}px ${userVoice.pad[1]}px ${userVoice.pad[2]}px ${userVoice.pad[3]}px !important;
-}
-
-/* 语音文字颜色 */
-.sully-bubble-ai div[class*="max-w-[260px]"] span,
-.sully-bubble-ai div[class*="max-w-[200px]"] span,
-.sully-bubble-ai .sully-voice-bar span {
-  color: ${ai.textColor} !important;
-  -webkit-text-fill-color: ${ai.textColor} !important;
-}
-.sully-bubble-user div[class*="max-w-[260px]"] span,
-.sully-bubble-user div[class*="max-w-[200px]"] span,
-.sully-bubble-user .sully-voice-bar span {
-  color: ${user.textColor} !important;
-  -webkit-text-fill-color: ${user.textColor} !important;
-}
-
-/* 语音波形与播放图标 */
-.sully-bubble-ai div[class*="max-w-[260px]"] svg,
-.sully-bubble-ai div[class*="max-w-[200px]"] svg,
-.sully-bubble-ai div[class*="max-w-[260px]"] [class*="bg-"],
-.sully-bubble-ai div[class*="max-w-[200px]"] [class*="bg-"] {
-  color: ${ai.textColor} !important;
-  background-color: ${ai.textColor} !important;
-}
-.sully-bubble-user div[class*="max-w-[260px]"] svg,
-.sully-bubble-user div[class*="max-w-[200px]"] svg,
-.sully-bubble-user div[class*="max-w-[260px]"] [class*="bg-"],
-.sully-bubble-user div[class*="max-w-[200px]"] [class*="bg-"] {
-  color: ${user.textColor} !important;
-  background-color: ${user.textColor} !important;
-}
-
-/* 外层气泡包含语音时清空自身边框，避免双层框冲突 */
-.sully-bubble-ai:has(div[class*="max-w-[260px]"]),
-.sully-bubble-ai:has(div[class*="max-w-[200px]"]),
-.sully-bubble-user:has(div[class*="max-w-[260px]"]),
-.sully-bubble-user:has(div[class*="max-w-[200px]"]) {
-  background: transparent !important;
-  border-color: transparent !important;
-  border-image: none !important;
-  box-shadow: none !important;
-  padding: 0 !important;
-}
-
-/* -------------------------------------------------------
-   4. 转账卡片组件 (严格限定转账卡自身，绝不波及其他卡片)
+   3. 转账卡片组件 (严格限定转账卡自身，绝不波及其他卡片)
    ------------------------------------------------------- */
 div[class*="w-64"][class*="rounded-2xl"][class*="p-4"],
 .sully-transfer-card,
@@ -771,14 +668,12 @@ div[class*="rounded-2xl"][class*="shadow-sm"][class*="border"][class*="w-fit"] *
 }
 
 /* -------------------------------------------------------
-   7. 清理多余图层与伪元素
+   5. 清理多余图层与伪元素
    ------------------------------------------------------- */
 .sully-bubble-ai::after,
 .sully-bubble-ai::before,
 .sully-bubble-user::after,
-.sully-bubble-user::before,
-.sully-voice-bar::after,
-.sully-voice-bar::before {
+.sully-bubble-user::before {
   display: none !important;
 }`;
 }
