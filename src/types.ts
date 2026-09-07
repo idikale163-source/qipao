@@ -30,3 +30,14 @@ export interface AppConfig {
   user: RoleConfig;
   modalStrategy: ModalAssetStrategy;
 }
+
+export interface SavedPreset {
+  id: string;
+  name: string;
+  note?: string;
+  exportType: ExportType;
+  config: AppConfig;
+  isBuiltin?: boolean;
+  createdAt: number;
+  updatedAt: number;
+}

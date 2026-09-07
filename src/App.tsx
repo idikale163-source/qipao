@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   ActiveComponent,
   ActiveMode,
@@ -8,6 +8,7 @@ import {
   ExportType,
   ModalAssetStrategy,
   QuadrantValues,
+  SavedPreset,
 } from './types';
 import { SlicingCanvas } from './components/SlicingCanvas';
 import { ColorPanel } from './components/ColorPanel';
@@ -15,70 +16,142 @@ import { ModalStrategyControl } from './components/ModalStrategyControl';
 import { PreviewSection } from './components/PreviewSection';
 import { CodeExport } from './components/CodeExport';
 import { MobileLivePreviewDock, MobileViewMode } from './components/MobileLivePreviewDock';
-import { Upload, Link2, RefreshCw, Smartphone } from 'lucide-react';
-
-const mkComp = (url: string, slice: QuadrantValues, pad: QuadrantValues, patternScale = 1.4): ComponentConfig => ({
-  url,
-  slice: [...slice] as QuadrantValues,
-  pad: [...pad] as QuadrantValues,
-  patternScale,
-  dirty: false,
-});
-
-const PRESET_SULLY: AppConfig = {
-  ai: {
-    url: 'https://nos.netease.com/ysf/46882d435e011f0c2c8191370f155579.png',
-    slice: [52, 63, 47, 73],
-    pad: [0, 4, 2, 4],
-    patternScale: 1.5,
-    textColor: '#ffffff',
-    voice: mkComp('https://nos.netease.com/ysf/46882d435e011f0c2c8191370f155579.png', [52, 63, 47, 73], [0, 8, 1, 8], 1.4),
-    transfer: mkComp('https://nos.netease.com/ysf/46882d435e011f0c2c8191370f155579.png', [52, 63, 47, 73], [6, 14, 6, 14], 1.3),
-  },
-  user: {
-    url: 'https://nos.netease.com/ysf/568a947a6b5a5c8b58a789cb3f543942.png',
-    slice: [51, 58, 43, 52],
-    pad: [0, 4, 2, 4],
-    patternScale: 1.5,
-    textColor: '#000000',
-    voice: mkComp('https://nos.netease.com/ysf/568a947a6b5a5c8b58a789cb3f543942.png', [51, 58, 43, 52], [0, 8, 1, 8], 1.4),
-    transfer: mkComp('https://nos.netease.com/ysf/568a947a6b5a5c8b58a789cb3f543942.png', [51, 58, 43, 52], [6, 12, 6, 12], 1.3),
-  },
-  modalStrategy: 'ai',
-};
-
-const PRESET_CLASSIC: AppConfig = {
-  ai: {
-    url: 'https://nos.netease.com/ysf/55c0b3a0df9225b169e3655f6d42c22f.png',
-    slice: [32, 36, 18, 34],
-    pad: [10, 14, 6, 16],
-    patternScale: 1.4,
-    textColor: '#ffffff',
-    voice: mkComp('https://nos.netease.com/ysf/55c0b3a0df9225b169e3655f6d42c22f.png', [32, 36, 18, 34], [6, 12, 6, 12], 1.4),
-    transfer: mkComp('https://nos.netease.com/ysf/55c0b3a0df9225b169e3655f6d42c22f.png', [32, 36, 18, 34], [6, 14, 6, 14], 1.4),
-  },
-  user: {
-    url: 'https://nos.netease.com/ysf/8fdb076828f29a6607830d0e6bad6178.png',
-    slice: [32, 36, 18, 34],
-    pad: [10, 12, 6, 18],
-    patternScale: 1.4,
-    textColor: '#ffffff',
-    voice: mkComp('https://nos.netease.com/ysf/8fdb076828f29a6607830d0e6bad6178.png', [32, 36, 18, 34], [6, 12, 6, 12], 1.4),
-    transfer: mkComp('https://nos.netease.com/ysf/8fdb076828f29a6607830d0e6bad6178.png', [32, 36, 18, 34], [6, 14, 6, 14], 1.4),
-  },
-  modalStrategy: 'ai',
-};
+import { PresetManagerModal } from './components/PresetManagerModal';
+import {
+  loadSavedPresets,
+  upsertPreset,
+  deletePresetFromStorage,
+  updatePresetMeta,
+  getStoredActivePresetId,
+  setStoredActivePresetId,
+  resetToDefaults,
+  DEFAULT_PRESETS,
+} from './utils/presetStorage';
+import { Upload, Link2, RefreshCw, Smartphone, Save, Plus, ChevronDown, Check, Bookmark } from 'lucide-react';
 
 export default function App() {
-  const [config, setConfig] = useState<AppConfig>(PRESET_SULLY);
+  const [presets, setPresets] = useState<SavedPreset[]>(() => loadSavedPresets());
+  const [activePresetId, setActivePresetId] = useState<string | null>(() => getStoredActivePresetId());
+  const [isPresetModalOpen, setIsPresetModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState<'list' | 'save_new'>('list');
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  // Initialize config from active preset or default
+  const [config, setConfig] = useState<AppConfig>(() => {
+    const savedList = loadSavedPresets();
+    const storedId = getStoredActivePresetId();
+    const found = savedList.find((p) => p.id === storedId) || savedList[0] || DEFAULT_PRESETS[0];
+    return JSON.parse(JSON.stringify(found.config));
+  });
+
   const [activeRole, setActiveRole] = useState<ActiveRole>('ai');
   const [activeComponent, setActiveComponent] = useState<ActiveComponent>('bubble');
   const [activeMode, setActiveMode] = useState<ActiveMode>('s');
-  const [exportType, setExportType] = useState<ExportType>('sully');
+  const [exportType, setExportType] = useState<ExportType>(() => {
+    const savedList = loadSavedPresets();
+    const storedId = getStoredActivePresetId();
+    const found = savedList.find((p) => p.id === storedId) || savedList[0];
+    return found?.exportType || 'sully';
+  });
   const [mobileViewMode, setMobileViewMode] = useState<MobileViewMode>('split');
   const [urlInput, setUrlInput] = useState('');
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const activePreset = presets.find((p) => p.id === activePresetId) || presets[0];
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => {
+      setToastMessage((prev) => (prev === msg ? null : prev));
+    }, 2400);
+  };
+
+  // Keyboard shortcut Ctrl+S / Cmd+S to quickly save
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        handleQuickSave();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [activePreset, config, exportType]);
+
+  // Apply a preset (restores config + exportType)
+  const handleSelectPreset = (preset: SavedPreset) => {
+    setActivePresetId(preset.id);
+    setStoredActivePresetId(preset.id);
+    setConfig(JSON.parse(JSON.stringify(preset.config)));
+    if (preset.exportType) {
+      setExportType(preset.exportType);
+    }
+    showToast(`已载入预设：${preset.name}（${preset.exportType.toUpperCase()} 模式）`);
+  };
+
+  // Quick save button
+  const handleQuickSave = () => {
+    if (!activePreset || activePreset.isBuiltin) {
+      // If current is builtin, open save new modal
+      setModalMode('save_new');
+      setIsPresetModalOpen(true);
+    } else {
+      // Update existing custom preset directly
+      const updatedPreset: SavedPreset = {
+        ...activePreset,
+        config: JSON.parse(JSON.stringify(config)),
+        exportType,
+        updatedAt: Date.now(),
+      };
+      const updatedList = upsertPreset(updatedPreset);
+      setPresets(updatedList);
+      showToast(`已保存对预设「${activePreset.name}」的修改！`);
+    }
+  };
+
+  // Save new preset
+  const handleSaveNewPreset = (name: string, note: string) => {
+    const newPreset: SavedPreset = {
+      id: `preset_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      name,
+      note,
+      isBuiltin: false,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      exportType,
+      config: JSON.parse(JSON.stringify(config)),
+    };
+    const updated = upsertPreset(newPreset);
+    setPresets(updated);
+    setActivePresetId(newPreset.id);
+    setStoredActivePresetId(newPreset.id);
+    showToast(`预设「${name}」已保存（${exportType.toUpperCase()} 模式）`);
+  };
+
+  // Update preset metadata (name & note)
+  const handleUpdatePresetMeta = (id: string, name: string, note: string) => {
+    const updated = updatePresetMeta(id, name, note);
+    setPresets(updated);
+    showToast('预设信息已更新');
+  };
+
+  // Delete preset
+  const handleDeletePreset = (id: string) => {
+    const target = presets.find((p) => p.id === id);
+    const updated = deletePresetFromStorage(id);
+    setPresets(updated);
+    if (activePresetId === id) {
+      const next = updated[0];
+      setActivePresetId(next.id);
+      setStoredActivePresetId(next.id);
+      setConfig(JSON.parse(JSON.stringify(next.config)));
+      if (next.exportType) {
+        setExportType(next.exportType);
+      }
+    }
+    showToast(`已删除预设「${target?.name || ''}」`);
+  };
 
   const roleConfig = config[activeRole];
   const currentComp: ComponentConfig =
@@ -301,15 +374,15 @@ export default function App() {
     setConfig((prev) => {
       const roleCfg = prev[activeRole];
       if (activeComponent === 'bubble') {
-        const preset = PRESET_SULLY[activeRole];
+        const defaultCfg = DEFAULT_PRESETS[0].config[activeRole];
         return {
           ...prev,
           [activeRole]: {
             ...roleCfg,
-            url: preset.url,
-            slice: [...preset.slice] as QuadrantValues,
-            pad: [...preset.pad] as QuadrantValues,
-            patternScale: preset.patternScale,
+            url: defaultCfg.url,
+            slice: [...defaultCfg.slice] as QuadrantValues,
+            pad: [...defaultCfg.pad] as QuadrantValues,
+            patternScale: defaultCfg.patternScale,
           },
         };
       } else {
@@ -334,7 +407,8 @@ export default function App() {
     <div className="min-h-screen bg-[#f0f2f5] text-slate-900 pb-12 font-sans">
       {/* 顶部导航与预设 - Clean Minimalism */}
       <header className="bg-white border-b-2 border-black sticky top-0 z-30 shadow-xs">
-        <div className="max-w-7xl mx-auto px-4 py-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 py-2.5 flex flex-col md:flex-row md:items-center justify-between gap-2.5">
+          {/* Logo & Slogan */}
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 bg-black rounded-full flex items-center justify-center text-white font-black text-sm shadow-[2px_2px_0px_rgba(0,0,0,0.3)] shrink-0">
               S
@@ -345,31 +419,72 @@ export default function App() {
                   九宫格切片与即时预览工作台
                 </h1>
                 <span className="text-[10px] font-black bg-black text-white px-2 py-0.5 rounded-md shadow-xs">
-                  v12.0
+                  v13.0
+                </span>
+                <span className="hidden sm:inline-block text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-500 px-1.5 py-0.5 rounded">
+                  浏览器永久存储
                 </span>
               </div>
               <p className="text-[10px] text-green-700 font-bold flex items-center gap-1.5 mt-0.5">
                 <span className="w-2 h-2 rounded-full bg-green-500 inline-block animate-pulse" />
-                <span>一边拖拽移动，一边零延迟看预览 · 全组件实时联动</span>
+                <span>一边拖拽移动，一边零延迟看预览 · 所有手机皮肤永久保存在本地</span>
               </p>
             </div>
           </div>
 
-          {/* 预设快捷切换 */}
-          <div className="flex items-center gap-2 self-start sm:self-center">
+          {/* 预设与小手机管理操作栏 */}
+          <div className="flex flex-wrap items-center gap-2 self-start md:self-center">
+            {/* 当前选用的小手机快速选择器 */}
+            {/* 当前选用预设选择器 */}
+            <div className="relative flex items-center">
+              <select
+                id="preset-quick-selector"
+                value={activePresetId || ''}
+                onChange={(e) => {
+                  const target = presets.find((p) => p.id === e.target.value);
+                  if (target) handleSelectPreset(target);
+                }}
+                className="text-xs font-black bg-[#f0f2f5] text-black border-2 border-black rounded-lg pl-2.5 pr-7 py-1.5 shadow-[2px_2px_0px_#000] focus:outline-none cursor-pointer appearance-none"
+              >
+                {presets.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    [{p.exportType?.toUpperCase() || 'SULLY'}] {p.name} {p.isBuiltin ? '(内置)' : ''}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="w-3.5 h-3.5 text-black absolute right-2 pointer-events-none" />
+            </div>
+
+            {/* 保存预设按钮 */}
             <button
               type="button"
-              onClick={() => setConfig(PRESET_SULLY)}
-              className="text-xs font-bold px-3 py-1 rounded-lg border-2 border-black bg-white text-black hover:bg-gray-100 active:translate-x-[1px] active:translate-y-[1px] active:shadow-none shadow-[2px_2px_0px_#000] transition-all"
+              id="save-new-preset-btn"
+              onClick={() => {
+                setModalMode('save_new');
+                setIsPresetModalOpen(true);
+              }}
+              title="保存当前切片数值与平台模式为新预设"
+              className="text-xs font-black px-3 py-1.5 rounded-lg border-2 border-black bg-black text-white hover:bg-neutral-800 active:translate-x-[1px] active:translate-y-[1px] active:shadow-none shadow-[2px_2px_0px_#000] transition-all flex items-center gap-1"
             >
-              Sully 白框预设
+              <Save className="w-3.5 h-3.5 text-emerald-400" />
+              <span>保存预设</span>
             </button>
+
+            {/* 管理预设 */}
             <button
               type="button"
-              onClick={() => setConfig(PRESET_CLASSIC)}
-              className="text-xs font-bold px-3 py-1 rounded-lg border-2 border-black bg-white text-black hover:bg-gray-100 active:translate-x-[1px] active:translate-y-[1px] active:shadow-none shadow-[2px_2px_0px_#000] transition-all"
+              id="open-preset-manager-btn"
+              onClick={() => {
+                setModalMode('list');
+                setIsPresetModalOpen(true);
+              }}
+              className="text-xs font-black px-3 py-1.5 rounded-lg border-2 border-black bg-white text-black hover:bg-gray-100 active:translate-x-[1px] active:translate-y-[1px] active:shadow-none shadow-[2px_2px_0px_#000] transition-all flex items-center gap-1.5"
             >
-              经典气泡预设
+              <Bookmark className="w-3.5 h-3.5 text-black" />
+              <span>预设管理</span>
+              <span className="text-[10px] font-black bg-black text-white px-1.5 py-0.2 rounded-full">
+                {presets.length}
+              </span>
             </button>
           </div>
         </div>
@@ -601,12 +716,36 @@ export default function App() {
         <div className="flex items-center gap-2">
           <span className="font-black text-black">Sully Visual Engine</span>
           <span>•</span>
-          <span>Nine-Grid Live Workbench v12.0</span>
+          <span>Nine-Grid Live Workbench v13.0</span>
+          <span className="text-emerald-700 font-bold">● 浏览器永久保存已激活</span>
         </div>
         <div>
-          <span>一边调一边看 · 即时零延迟联动</span>
+          <span>一边调一边看 · 即时零延迟联动 · 随时保存切换预设</span>
         </div>
       </footer>
+
+      {/* 预设管理与保存弹窗 */}
+      <PresetManagerModal
+        isOpen={isPresetModalOpen}
+        onClose={() => setIsPresetModalOpen(false)}
+        mode={modalMode}
+        currentConfig={config}
+        currentExportType={exportType}
+        activePresetId={activePresetId}
+        presets={presets}
+        onSelectPreset={handleSelectPreset}
+        onSaveNewPreset={handleSaveNewPreset}
+        onUpdatePresetMeta={handleUpdatePresetMeta}
+        onDeletePreset={handleDeletePreset}
+      />
+
+      {/* 浮动操作提示 Toast */}
+      {toastMessage && (
+        <div className="fixed bottom-5 right-5 z-50 bg-black text-white text-xs font-black px-4 py-2.5 rounded-xl border-2 border-white shadow-[4px_4px_0px_rgba(0,0,0,0.5)] flex items-center gap-2 animate-in slide-in-from-bottom-3 duration-200">
+          <Check className="w-4 h-4 text-emerald-400 stroke-[3]" />
+          <span>{toastMessage}</span>
+        </div>
+      )}
     </div>
   );
 }
