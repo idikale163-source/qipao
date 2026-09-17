@@ -336,8 +336,11 @@ export function generateSullyCSS(config: AppConfig): string {
     ? '#000000'
     : (user.textColor || '#ffffff');
 
-  const receiptSrc = userTransfer.url || 'https://nos.netease.com/ysf/568a947a6b5a5c8b58a789cb3f543942.png';
-  const receiptSlice = userTransfer.slice || [51, 58, 43, 52];
+  // 回执卡：复用转账卡素材与切片，不单独配置
+  const receiptAiSrc = aiTransfer.url;
+  const receiptAiSlice = aiTransfer.slice;
+  const receiptUserSrc = userTransfer.url;
+  const receiptUserSlice = userTransfer.slice;
 
   return `/* =======================================================
    Sully 全局视觉定制方案 (官方标准单层盒模型直出版)
@@ -640,30 +643,62 @@ div[class*="w-64"][class*="rounded-2xl"] [class*="rounded-full"],
 ${getModalCss(config, 'sully')}
 
 /* -------------------------------------------------------
-   6. 收款 / 退回回执小卡片
+   6. 收款 / 退回回执小卡片 (复用转账卡素材，左右分端自动匹配)
    ------------------------------------------------------- */
+
+/* 6.1 回执基础盒模型重置 */
 div[class*="rounded-2xl"][class*="shadow-sm"][class*="border"][class*="w-fit"][class*="from-emerald-50"],
 div[class*="rounded-2xl"][class*="shadow-sm"][class*="border"][class*="w-fit"][class*="from-slate-50"] {
   position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  width: fit-content !important;
+  min-height: 30px !important;
   overflow: visible !important;
   background: transparent !important;
   background-color: transparent !important;
+  background-image: none !important;
   border-radius: 0 !important;
   box-shadow: none !important;
   border-style: solid !important;
   border-color: transparent !important;
-  border-image-source: url('${receiptSrc}') !important;
-  border-image-slice: ${receiptSlice[0]} ${receiptSlice[1]} ${receiptSlice[2]} ${receiptSlice[3]} fill !important;
-  border-width: 20px 15px 5px 15px !important;
   border-image-repeat: stretch !important;
-  border-image-width: 1.2 !important;
-  padding: 3px 10px 5px 10px !important;
+  border-image-width: ${aiTransfer.patternScale} !important;
   box-sizing: border-box !important;
 }
 
-div[class*="rounded-2xl"][class*="shadow-sm"][class*="border"][class*="w-fit"] * {
-  color: #000000 !important;
-  -webkit-text-fill-color: #000000 !important;
+/* 6.2 居左 (AI 对方的已收款/退回回执) -> 匹配 AI 转账卡素材 */
+.sully-chat-messages > div:not([class*="justify-end"]) div[class*="rounded-2xl"][class*="shadow-sm"][class*="border"][class*="w-fit"],
+.sully-bubble-ai div[class*="rounded-2xl"][class*="shadow-sm"][class*="w-fit"] {
+  border-width: ${bwAiTransfer[0]}px ${bwAiTransfer[1]}px ${bwAiTransfer[2]}px ${bwAiTransfer[3]}px !important;
+  border-image-source: url('${receiptAiSrc}') !important;
+  border-image-slice: ${receiptAiSlice[0]} ${receiptAiSlice[1]} ${receiptAiSlice[2]} ${receiptAiSlice[3]} fill !important;
+  border-image-width: ${aiTransfer.patternScale} !important;
+  padding: 3px 10px 4px 10px !important;
+}
+
+/* 6.3 居右 (我方用户的已收款/退回回执) -> 匹配 用户转账卡素材 */
+.sully-chat-messages > div[class*="justify-end"] div[class*="rounded-2xl"][class*="shadow-sm"][class*="border"][class*="w-fit"],
+.sully-bubble-user div[class*="rounded-2xl"][class*="shadow-sm"][class*="w-fit"] {
+  border-width: ${bwUserTransfer[0]}px ${bwUserTransfer[1]}px ${bwUserTransfer[2]}px ${bwUserTransfer[3]}px !important;
+  border-image-source: url('${receiptUserSrc}') !important;
+  border-image-slice: ${receiptUserSlice[0]} ${receiptUserSlice[1]} ${receiptUserSlice[2]} ${receiptUserSlice[3]} fill !important;
+  border-image-width: ${userTransfer.patternScale} !important;
+  padding: 3px 10px 4px 10px !important;
+}
+
+/* 6.4 回执内文字颜色：跟随对应端转账卡文字色 */
+.sully-chat-messages > div:not([class*="justify-end"]) div[class*="rounded-2xl"][class*="shadow-sm"][class*="border"][class*="w-fit"] *,
+.sully-bubble-ai div[class*="rounded-2xl"][class*="shadow-sm"][class*="w-fit"] * {
+  color: ${aiTransferTextColor} !important;
+  -webkit-text-fill-color: ${aiTransferTextColor} !important;
+  text-shadow: none !important;
+}
+
+.sully-chat-messages > div[class*="justify-end"] div[class*="rounded-2xl"][class*="shadow-sm"][class*="border"][class*="w-fit"] *,
+.sully-bubble-user div[class*="rounded-2xl"][class*="shadow-sm"][class*="w-fit"] * {
+  color: ${userTransferTextColor} !important;
+  -webkit-text-fill-color: ${userTransferTextColor} !important;
   text-shadow: none !important;
 }
 
