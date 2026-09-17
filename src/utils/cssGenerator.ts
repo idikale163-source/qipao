@@ -657,19 +657,17 @@ div[class*="rounded-2xl"][class*="shadow-sm"][class*="border"][class*="w-fit"][c
   overflow: visible !important;
   background: transparent !important;
   background-color: transparent !important;
-  background-image: none !important;
   border-radius: 0 !important;
   box-shadow: none !important;
   border-style: solid !important;
   border-color: transparent !important;
   border-image-repeat: stretch !important;
-  border-image-width: ${aiTransfer.patternScale} !important;
   box-sizing: border-box !important;
 }
 
-/* 6.2 居左 (AI 对方的已收款/退回回执) -> 匹配 AI 转账卡素材 */
-.sully-chat-messages > div:not([class*="justify-end"]) div[class*="rounded-2xl"][class*="shadow-sm"][class*="border"][class*="w-fit"],
-.sully-bubble-ai div[class*="rounded-2xl"][class*="shadow-sm"][class*="w-fit"] {
+/* 6.2 默认命中 (居左 / AI 对方) -> 复用 AI 转账卡素材 */
+div[class*="rounded-2xl"][class*="shadow-sm"][class*="border"][class*="w-fit"][class*="from-emerald-50"],
+div[class*="rounded-2xl"][class*="shadow-sm"][class*="border"][class*="w-fit"][class*="from-slate-50"] {
   border-width: ${bwAiTransfer[0]}px ${bwAiTransfer[1]}px ${bwAiTransfer[2]}px ${bwAiTransfer[3]}px !important;
   border-image-source: url('${receiptAiSrc}') !important;
   border-image-slice: ${receiptAiSlice[0]} ${receiptAiSlice[1]} ${receiptAiSlice[2]} ${receiptAiSlice[3]} fill !important;
@@ -677,9 +675,15 @@ div[class*="rounded-2xl"][class*="shadow-sm"][class*="border"][class*="w-fit"][c
   padding: 3px 10px 4px 10px !important;
 }
 
-/* 6.3 居右 (我方用户的已收款/退回回执) -> 匹配 用户转账卡素材 */
-.sully-chat-messages > div[class*="justify-end"] div[class*="rounded-2xl"][class*="shadow-sm"][class*="border"][class*="w-fit"],
-.sully-bubble-user div[class*="rounded-2xl"][class*="shadow-sm"][class*="w-fit"] {
+/* 6.3 居右 (我方用户) -> 复用 用户转账卡素材 (高权重覆盖 6.2) */
+div[class*="justify-end"] div[class*="rounded-2xl"][class*="shadow-sm"][class*="border"][class*="w-fit"][class*="from-emerald-50"],
+div[class*="justify-end"] div[class*="rounded-2xl"][class*="shadow-sm"][class*="border"][class*="w-fit"][class*="from-slate-50"],
+div[class*="flex-row-reverse"] div[class*="rounded-2xl"][class*="shadow-sm"][class*="border"][class*="w-fit"][class*="from-emerald-50"],
+div[class*="flex-row-reverse"] div[class*="rounded-2xl"][class*="shadow-sm"][class*="border"][class*="w-fit"][class*="from-slate-50"],
+div[class*="self-end"] div[class*="rounded-2xl"][class*="shadow-sm"][class*="border"][class*="w-fit"][class*="from-emerald-50"],
+div[class*="self-end"] div[class*="rounded-2xl"][class*="shadow-sm"][class*="border"][class*="w-fit"][class*="from-slate-50"],
+div[class*="ml-auto"] div[class*="rounded-2xl"][class*="shadow-sm"][class*="border"][class*="w-fit"][class*="from-emerald-50"],
+div[class*="ml-auto"] div[class*="rounded-2xl"][class*="shadow-sm"][class*="border"][class*="w-fit"][class*="from-slate-50"] {
   border-width: ${bwUserTransfer[0]}px ${bwUserTransfer[1]}px ${bwUserTransfer[2]}px ${bwUserTransfer[3]}px !important;
   border-image-source: url('${receiptUserSrc}') !important;
   border-image-slice: ${receiptUserSlice[0]} ${receiptUserSlice[1]} ${receiptUserSlice[2]} ${receiptUserSlice[3]} fill !important;
@@ -687,18 +691,8 @@ div[class*="rounded-2xl"][class*="shadow-sm"][class*="border"][class*="w-fit"][c
   padding: 3px 10px 4px 10px !important;
 }
 
-/* 6.4 回执内文字颜色：跟随对应端转账卡文字色 */
-.sully-chat-messages > div:not([class*="justify-end"]) div[class*="rounded-2xl"][class*="shadow-sm"][class*="border"][class*="w-fit"] *,
-.sully-bubble-ai div[class*="rounded-2xl"][class*="shadow-sm"][class*="w-fit"] * {
-  color: ${aiTransferTextColor} !important;
-  -webkit-text-fill-color: ${aiTransferTextColor} !important;
-  text-shadow: none !important;
-}
-
-.sully-chat-messages > div[class*="justify-end"] div[class*="rounded-2xl"][class*="shadow-sm"][class*="border"][class*="w-fit"] *,
-.sully-bubble-user div[class*="rounded-2xl"][class*="shadow-sm"][class*="w-fit"] * {
-  color: ${userTransferTextColor} !important;
-  -webkit-text-fill-color: ${userTransferTextColor} !important;
+/* 6.4 回执内文字：跟随对应端转账卡文字色 */
+div[class*="rounded-2xl"][class*="shadow-sm"][class*="border"][class*="w-fit"] * {
   text-shadow: none !important;
 }
 
